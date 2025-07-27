@@ -1,78 +1,50 @@
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-    <meta charset="UTF-8">
-    <title>AshNote</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-    <div class="container mt-5">
-        <h1 class="mb-4 text-center">AshNote</h1>
+{% extends "base.html" %}
+{% block title %}Overzicht{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Overzicht van sigaren</h2>
+    <a href="{{ url_for('add') }}" class="btn btn-success">Nieuwe sigaar toevoegen</a>
+</div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+{% if cigars %}
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Naam</th>
+                    <th>Beoordeling</th>
+                    <th>Land</th>
+                    <th>Locatie</th>
+                    <th>Prijs (€)</th>
+                    <th>Acties</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cigar in cigars %}
+                <tr>
+                    <td>
+                        {% if cigar.image_filename %}
+                        <img src="{% if cigar.image_filename %}{{ url_for('uploaded_file', filename=cigar.image_filename) }}{% else %}{{ url_for('static', filename='ashnote-logo.png') }}{% endif %}" alt="Foto" width="60">
+                        {% endif %}
+                    </td>
+                    <td>{{ cigar.name }}</td>
+                    <td>{{ cigar.rating }}</td>
+                    <td>{{ cigar.origin_country or '-' }}</td>
+                    <td>{{ cigar.purchase_location or '-' }}</td>
+                    <td>{{ "%.2f"|format(cigar.price or 0) }}</td>
+                    <td>
+                        <a href="{{ url_for('edit', id=cigar.id) }}" class="btn btn-sm btn-outline-primary">Bewerk</a>
+                        <form action="{{ url_for('delete', id=cigar.id) }}" method="post" style="display:inline-block;">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Verwijder</button>
+                        </form>
+                    </td>
+                </tr>
                 {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <div class="mb-3">
-            <a href="{{ url_for('add') }}" class="btn btn-success">+ Nieuwe sigaar</a>
-            <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary float-end">Uitloggen</a>
-        </div>
-
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Sigarenoverzicht</h5>
-                {% if cigars %}
-                <div class="table-responsive">
-                    <table class="table table-bordered align-middle text-center">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Foto</th>
-                                <th>Naam</th>
-                                <th>Beoordeling</th>
-                                <th>Land</th>
-                                <th>Locatie</th>
-                                <th>Prijs (€)</th>
-                                <th>Acties</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for cigar in cigars %}
-                            <tr>
-                                <td>
-                                    {% if cigar.image_filename %}
-                                        <img src="{{ url_for('uploaded_file', filename=cigar.image_filename) }}" alt="Foto" class="img-thumbnail" style="max-height: 80px;">
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                                <td>{{ cigar.name }}</td>
-                                <td>{{ cigar.rating }}</td>
-                                <td>{{ cigar.origin_country or '-' }}</td>
-                                <td>{{ cigar.purchase_location or '-' }}</td>
-                                <td>{{ "%.2f"|format(cigar.price or 0) }}</td>
-                                <td>
-                                    <a href="{{ url_for('edit', id=cigar.id) }}" class="btn btn-sm btn-warning">Bewerken</a>
-                                    <form method="POST" action="{{ url_for('delete', id=cigar.id) }}" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Verwijder deze sigaar?')">Verwijder</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                    <p class="text-muted">Nog geen sigaren toegevoegd.</p>
-                {% endif %}
-            </div>
-        </div>
+            </tbody>
+        </table>
     </div>
-</body>
-</html>
+{% else %}
+    <p class="text-muted">Nog geen sigaren toegevoegd.</p>
+{% endif %}
+{% endblock %}
