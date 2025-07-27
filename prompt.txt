@@ -1,0 +1,85 @@
+Zeker! Hieronder staat een **volledige prompt** die je kunt kopiëren en plakken in een nieuwe ChatGPT-sessie. Daarmee kan je direct verdergaan waar we gebleven zijn. Alle context, structuur, wensen en instellingen zijn inbegrepen:
+
+---
+
+## 🧾 **Prompt voor voortzetting van de AshNote-app**
+
+```plaintext
+Ik werk aan een Flask-app genaamd **AshNote**. Het is een sigarenlogboek met inlogbeveiliging, fotouploads, en een nette Bootstrap-gebaseerde frontend.
+
+Hier is de context tot nu toe, zodat je mij direct kunt helpen bij het verder bouwen en verbeteren van de app:
+
+---
+
+🔧 **Backend & database**
+
+- Flask (met Jinja2), SQLAlchemy, dotenv, Bootstrap 5.3
+- Inlog via `.env` variabelen: `LOGIN_USER`, `LOGIN_PASS`, `SECRET_KEY`
+- SQLite wordt opgeslagen in `/app/data/cigars.db`
+- Afbeeldingen worden geüpload naar `data/uploads/`
+- Elke sigaar heeft de velden: `id`, `name`, `rating`, `origin_country`, `purchase_location`, `price`, `image_filename`
+- Route `/uploads/<filename>` wordt gebruikt om geüploade foto's op te halen
+
+---
+
+🖼️ **Frontend (HTML-templates)**
+
+Alle pagina’s maken gebruik van een gedeelde `base.html` die:
+- het AshNote-logo toont linksboven in de navbar
+- Bootstrap gebruikt voor consistente styling
+- flash-meldingen weergeeft
+- favicon toont via `static/favicon.ico`
+- het logo staat in `static/ashnote-logo.png`
+
+De templates die erop gebaseerd zijn:
+- `index.html`: toont alle sigaren in een tabel, met de foto helemaal links. Als er geen foto is, toont hij automatisch het logo als placeholder.
+- `add.html`: formulier om nieuwe sigaar toe te voegen met uploadveld voor afbeelding.
+- `edit.html`: formulier om een bestaande sigaar aan te passen + upload van nieuwe foto.
+- `login.html`: loginformulier met validatie.
+
+---
+
+📁 **Projectstructuur (beknopt)**
+
+```
+
+AshNote/
+├── app.py
+├── .env
+├── requirements.txt
+├── templates/
+│   ├── base.html
+│   ├── index.html
+│   ├── add.html
+│   ├── edit.html
+│   └── login.html
+├── data/
+│   ├── cigars.db
+│   └── uploads/
+├── static/
+│   ├── favicon.ico
+│   └── ashnote-logo.png
+└── Dockerfile & docker-compose.yml (met volumes voor persistentie)
+
+```
+
+---
+
+🧩 **Openstaande taken en wensen:**
+1. Uniforme stijl van alle pagina's behouden bij wijzigingen.
+2. Mogelijkheid toevoegen om sigaren te taggen of te filteren.
+3. Responsive optimalisatie blijft belangrijk voor mobiel.
+4. Optioneel: dashboard met stats over aantallen, gemiddelden, landen, etc.
+5. Formvalidatie verbeteren (bijv. rating moet tussen 1–10 blijven).
+6. Alternatieve image-preview tonen vóór uploaden (optioneel, client-side).
+
+---
+
+Gebruik deze volledige context om mij verder te helpen met het verbeteren van AshNote. Vraag gerust of ik bestanden of codefragmenten opnieuw wil geven. 
+```
+
+---
+
+💡 **Tip:** Je kunt dit ook als `ashnote_prompt.txt` opslaan en telkens hergebruiken.
+
+Laat me weten als je een versie wil waarin ook direct de `Dockerfile`, `.env`, of `app.py` wordt meegeleverd.

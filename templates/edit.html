@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Bewerk Sigaar{% endblock %}
+{% block content %}
+<h2>Sigaar bewerken</h2>
+<form method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label class="form-label">Naam</label>
+        <input type="text" name="name" class="form-control" value="{{ cigar.name }}" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Beoordeling</label>
+        <input type="number" name="rating" class="form-control" value="{{ cigar.rating }}" min="1" max="10" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Land van herkomst</label>
+        <input type="text" name="origin_country" class="form-control" value="{{ cigar.origin_country }}">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Aankooplocatie</label>
+        <input type="text" name="purchase_location" class="form-control" value="{{ cigar.purchase_location }}">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Prijs</label>
+        <input type="number" name="price" class="form-control" step="0.01" value="{{ cigar.price }}">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Afbeelding vervangen</label>
+        <input type="file" name="image" class="form-control">
+        {% if cigar.image_filename %}
+            <div class="mt-2">
+                <img src="{{ url_for('uploaded_file', filename=cigar.image_filename) }}" width="100">
+            </div>
+        {% endif %}
+    </div>
+    <button type="submit" class="btn btn-primary">Opslaan</button>
+</form>
+{% endblock %}

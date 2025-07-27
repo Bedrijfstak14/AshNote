@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Toevoegen{% endblock %}
+{% block content %}
+<h2>Nieuwe sigaar toevoegen</h2>
+<form method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="name" class="form-label">Naam</label>
+        <input type="text" class="form-control" name="name" required>
+    </div>
+    <div class="mb-3">
+        <label for="rating" class="form-label">Beoordeling (1-10)</label>
+        <input type="number" class="form-control" name="rating" min="1" max="10" required>
+    </div>
+    <div class="mb-3">
+        <label for="origin_country" class="form-label">Land van herkomst</label>
+        <input type="text" class="form-control" name="origin_country">
+    </div>
+    <div class="mb-3">
+        <label for="purchase_location" class="form-label">Aankooplocatie</label>
+        <input type="text" class="form-control" name="purchase_location">
+    </div>
+    <div class="mb-3">
+        <label for="price" class="form-label">Prijs (€)</label>
+        <input type="number" step="0.01" class="form-control" name="price">
+    </div>
+    <div class="mb-3">
+        <label for="image" class="form-label">Afbeelding</label>
+        <input type="file" class="form-control" name="image">
+    </div>
+    <button type="submit" class="btn btn-primary">Opslaan</button>
+</form>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Overzicht{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Overzicht van sigaren</h2>
+    <a href="{{ url_for('add') }}" class="btn btn-success">Nieuwe sigaar toevoegen</a>
+</div>
+
+{% if cigars %}
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Naam</th>
+                    <th>Beoordeling</th>
+                    <th>Land</th>
+                    <th>Locatie</th>
+                    <th>Prijs (€)</th>
+                    <th>Acties</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cigar in cigars %}
+                <tr>
+                    <td>
+                        {% if cigar.image_filename %}
+                        <img src="{% if cigar.image_filename %}{{ url_for('uploaded_file', filename=cigar.image_filename) }}{% else %}{{ url_for('static', filename='ashnote-logo.png') }}{% endif %}" alt="Foto" width="60">
+                        {% endif %}
+                    </td>
+                    <td>{{ cigar.name }}</td>
+                    <td>{{ cigar.rating }}</td>
+                    <td>{{ cigar.origin_country or '-' }}</td>
+                    <td>{{ cigar.purchase_location or '-' }}</td>
+                    <td>{{ "%.2f"|format(cigar.price or 0) }}</td>
+                    <td>
+                        <a href="{{ url_for('edit', id=cigar.id) }}" class="btn btn-sm btn-outline-primary">Bewerk</a>
+                        <form action="{{ url_for('delete', id=cigar.id) }}" method="post" style="display:inline-block;">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Verwijder</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p class="text-muted">Nog geen sigaren toegevoegd.</p>
+{% endif %}
+{% endblock %}
