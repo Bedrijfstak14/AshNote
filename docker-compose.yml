@@ -5,11 +5,3 @@ services:
     build: .
     ports:
       - "5005:8000"
-    env_file:
-      - .env
-    volumes:
-      - ./app:/app
-      - cigarlog-db:/app/cigars_data
-
-volumes:
-  cigarlog-db:

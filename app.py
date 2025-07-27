@@ -1,10 +1,17 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cigars_data/cigars.db'
+
+# Juiste pad naar /tmp (altijd beschrijfbaar in Docker)
+DB_DIR = "/tmp/cigars_data"
+os.makedirs(DB_DIR, exist_ok=True)
+
+# SQLite-bestand in tijdelijke map (geen volume nodig!)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/cigars_data/cigars.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 class Cigar(db.Model):
@@ -28,13 +35,10 @@ def add():
     purchase_location = request.form.get("purchase_location")
     price = float(request.form.get("price"))
 
-    new_cigar = Cigar(
-        name=name,
-        rating=rating,
-        origin_country=origin_country,
-        purchase_location=purchase_location,
-        price=price
-    )
+    new_cigar = Cigar(name=name, rating=rating,
+                      origin_country=origin_country,
+                      purchase_location=purchase_location,
+                      price=price)
     db.session.add(new_cigar)
     db.session.commit()
     return redirect(url_for("index"))
