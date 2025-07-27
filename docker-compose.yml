@@ -5,3 +5,10 @@ services:
     build: .
     ports:
       - "5005:8000"
+    env_file:
+      - .env      
+    volumes:
+      - cigar_data:/tmp/cigars_data
+
+volumes:
+  cigar_data:
