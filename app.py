@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 
@@ -27,10 +27,11 @@ class Cigar(db.Model):
 
 @app.route("/")
 def index():
+    if "user" not in session:
+        return redirect(url_for("login"))
+
     cigars = Cigar.query.all()
     return render_template("index.html", cigars=cigars)
-
-from flask import flash
 
 @app.route("/add", methods=["GET", "POST"])
 def add():
@@ -58,6 +59,30 @@ def add():
             return redirect(url_for("add"))
 
     return render_template("add.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        if (username == os.getenv("LOGIN_USER") and
+                password == os.getenv("LOGIN_PASS")):
+            session["user"] = username
+            flash("Succesvol ingelogd!", "success")
+            return redirect(url_for("index"))
+        else:
+            flash("Ongeldige inloggegevens", "danger")
+            return redirect(url_for("login"))
+
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    session.pop("user", None)
+    flash("Je bent uitgelogd.", "info")
+    return redirect(url_for("login"))
 
 
 if __name__ == "__main__":
