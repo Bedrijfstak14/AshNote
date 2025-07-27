@@ -1,37 +1,39 @@
 {% extends "base.html" %}
-{% block title %}Bewerk Sigaar{% endblock %}
+{% block title %}Sigaar bewerken{% endblock %}
 {% block content %}
-<h2>Sigaar bewerken</h2>
-<form method="POST" enctype="multipart/form-data">
-    <div class="mb-3">
-        <label class="form-label">Naam</label>
-        <input type="text" name="name" class="form-control" value="{{ cigar.name }}" required>
+
+<h2 class="mb-4">Sigaar bewerken</h2>
+
+<form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+    <div class="row g-3">
+        <div class="col-12 col-md-6">
+            <label for="name" class="form-label">Naam</label>
+            <input type="text" class="form-control" name="name" value="{{ cigar.name }}" required>
+        </div>
+        <div class="col-12 col-md-6">
+            <label for="rating" class="form-label">Beoordeling (1–10)</label>
+            <input type="number" class="form-control" name="rating" min="1" max="10" value="{{ cigar.rating }}" required>
+        </div>
+        <div class="col-12 col-md-6">
+            <label for="origin_country" class="form-label">Land van herkomst</label>
+            <input type="text" class="form-control" name="origin_country" value="{{ cigar.origin_country }}">
+        </div>
+        <div class="col-12 col-md-6">
+            <label for="purchase_location" class="form-label">Aankooplocatie</label>
+            <input type="text" class="form-control" name="purchase_location" value="{{ cigar.purchase_location }}">
+        </div>
+        <div class="col-12 col-md-6">
+            <label for="price" class="form-label">Prijs (€)</label>
+            <input type="number" step="0.01" class="form-control" name="price" value="{{ cigar.price }}">
+        </div>
+        <div class="col-12 col-md-6">
+            <label for="image" class="form-label">Nieuwe afbeelding</label>
+            <input type="file" class="form-control" name="image">
+        </div>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Beoordeling</label>
-        <input type="number" name="rating" class="form-control" value="{{ cigar.rating }}" min="1" max="10" required>
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary">Opslaan</button>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Land van herkomst</label>
-        <input type="text" name="origin_country" class="form-control" value="{{ cigar.origin_country }}">
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Aankooplocatie</label>
-        <input type="text" name="purchase_location" class="form-control" value="{{ cigar.purchase_location }}">
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Prijs</label>
-        <input type="number" name="price" class="form-control" step="0.01" value="{{ cigar.price }}">
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Afbeelding vervangen</label>
-        <input type="file" name="image" class="form-control">
-        {% if cigar.image_filename %}
-            <div class="mt-2">
-                <img src="{{ url_for('uploaded_file', filename=cigar.image_filename) }}" width="100">
-            </div>
-        {% endif %}
-    </div>
-    <button type="submit" class="btn btn-primary">Opslaan</button>
 </form>
+
 {% endblock %}
