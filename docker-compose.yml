@@ -8,7 +8,7 @@ services:
     env_file:
       - .env      
     volumes:
-      - cigar_data:/tmp/cigars_data
+      - appdata:/app/data
 
 volumes:
-  cigar_data:
+  appdata:
