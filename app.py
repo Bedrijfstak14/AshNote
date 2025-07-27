@@ -84,6 +84,42 @@ def logout():
     flash("Je bent uitgelogd.", "info")
     return redirect(url_for("login"))
 
+@app.route("/delete/<int:id>", methods=["POST"])
+def delete(id):
+    if "user" not in session:
+        return redirect(url_for("login"))
+
+    cigar = Cigar.query.get_or_404(id)
+    db.session.delete(cigar)
+    db.session.commit()
+    flash("Sigaar verwijderd.", "success")
+    return redirect(url_for("index"))
+
+@app.route("/edit/<int:id>", methods=["GET", "POST"])
+def edit(id):
+    if "user" not in session:
+        return redirect(url_for("login"))
+
+    cigar = Cigar.query.get_or_404(id)
+
+    if request.method == "POST":
+        try:
+            cigar.name = request.form.get("name")
+            cigar.rating = int(request.form.get("rating"))
+            cigar.origin_country = request.form.get("origin_country")
+            cigar.purchase_location = request.form.get("purchase_location")
+            cigar.price = float(request.form.get("price") or 0.0)
+
+            db.session.commit()
+            flash("Sigaar bijgewerkt!", "success")
+            return redirect(url_for("index"))
+        except Exception as e:
+            flash(f"Fout bij bijwerken: {e}", "danger")
+            return redirect(url_for("edit", id=id))
+
+    return render_template("edit.html", cigar=cigar)
+
+
 
 if __name__ == "__main__":
     with app.app_context():
