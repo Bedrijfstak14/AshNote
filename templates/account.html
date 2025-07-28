@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Mijn account{% endblock %}
+{% block content %}
+
+<h2>Mijn account</h2>
+
+<div class="card p-4 shadow-sm">
+    <p><strong>Gebruikersnaam:</strong> {{ user.username }}</p>
+
+    <p><strong>Aantal sigaren:</strong> {{ cigar_count }}</p>
+
+    <p><strong>Totale waarde:</strong> €{{ "%.2f"|format(total_value) }}</p>
+
+    <p><strong>Meest voorkomende aankooplocatie:</strong>
+        {{ most_common_location if most_common_location else "Geen data" }}
+    </p>
+
+    <a href="{{ url_for('change_password') }}" class="btn btn-outline-warning mt-3">Wachtwoord wijzigen</a>
+</div>
+
+{% endblock %}
