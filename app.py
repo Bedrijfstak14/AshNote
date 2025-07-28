@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 
@@ -32,13 +33,42 @@ class Cigar(db.Model):
 def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
+
+
 @app.route("/")
 def index():
     if "user" not in session:
         return redirect(url_for("login"))
-    cigars = Cigar.query.all()
+
+    search_query = request.args.get("search", "").strip()
+    sort_column = request.args.get("sort", "").strip()
+
+    cigars_query = Cigar.query
+
+    # Zoeken op naam
+    if search_query:
+        cigars_query = cigars_query.filter(
+            or_(
+                Cigar.name.ilike(f"%{search_query}%"),
+                Cigar.purchase_location.ilike(f"%{search_query}%"),
+                Cigar.origin_country.ilike(f"%{search_query}%")
+            )
+        )
+
+    # Sorteerbare kolommen
+    sort_options = {
+        "name": Cigar.name,
+        "price": Cigar.price,
+        "purchase_location": Cigar.purchase_location,
+        "origin_country": Cigar.origin_country
+    }
+    if sort_column in sort_options:
+        cigars_query = cigars_query.order_by(sort_options[sort_column])
+
+    cigars = cigars_query.all()
     show_images = any(c.image_filename for c in cigars)
-    return render_template("index.html", cigars=cigars, show_images=show_images)
+
+    return render_template("index.html", cigars=cigars, show_images=show_images, sort=sort_column)
 
 @app.route("/add", methods=["GET", "POST"])
 def add():
