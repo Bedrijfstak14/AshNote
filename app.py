@@ -152,7 +152,7 @@ def admin_reset_password(user_id):
         return redirect(url_for("login"))
 
     current_user = User.query.get(session["user_id"])
-    if current_user.username != os.getenv("ADMIN_USERNAME"):
+    if current_user.username != ADMIN_USERNAME:
         flash("Geen toegang tot deze pagina.", "danger")
         return redirect(url_for("index"))
 
