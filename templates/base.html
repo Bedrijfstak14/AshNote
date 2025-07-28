@@ -27,23 +27,30 @@
             </button>
 
             <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
-                <ul class="navbar-nav">
-                    {% if session.get("user") %}
-                        <li class="nav-item me-2">
-                            <a href="{{ url_for('account') }}" class="btn btn-outline-dark btn-sm mt-2 mt-lg-0">Mijn account</a>
+                {% if session.get("user") %}
+                    <ul class="navbar-nav align-items-lg-center flex-row gap-2">
+                        {% if is_admin %}
+                        <li class="nav-item">
+                            <a href="{{ url_for('admin') }}" class="btn btn-outline-dark btn-sm">Admin</a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a href="{{ url_for('account') }}" class="btn btn-outline-primary btn-sm">Mijn account</a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm mt-2 mt-lg-0">Uitloggen</a>
+                            <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">Uitloggen</a>
                         </li>
-                    {% else %}
-                        <li class="nav-item me-2">
-                            <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-sm mt-2 mt-lg-0">Inloggen</a>
+                    </ul>
+                {% else %}
+                    <ul class="navbar-nav align-items-lg-center flex-row gap-2">
+                        <li class="nav-item">
+                            <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-sm">Inloggen</a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm mt-2 mt-lg-0">Registreren</a>
+                            <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">Registreren</a>
                         </li>
-                    {% endif %}
-                </ul>
+                    </ul>
+                {% endif %}
             </div>
         </div>
     </nav>

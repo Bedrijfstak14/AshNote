@@ -8,6 +8,7 @@ from sqlalchemy import or_
 
 load_dotenv()
 
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "geheim")
 
@@ -38,8 +39,8 @@ class Cigar(db.Model):
     purchase_location = db.Column(db.String(100))
     price = db.Column(db.Float)
     image_filename = db.Column(db.String(255))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    user = db.relationship('User', backref=db.backref('cigars', lazy=True))
+    remarks = db.Column(db.Text) 
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
@@ -73,7 +74,7 @@ def index():
         cigars_query = cigars_query.order_by(sort_options[sort_column])
 
     cigars = cigars_query.all()
-    return render_template("index.html", cigars=cigars, sort=sort_column)
+    return render_template("index.html", cigars=cigars, sort=sort_column, is_admin=(session.get("username") == ADMIN_USERNAME))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -84,6 +85,7 @@ def login():
 
         if user and check_password_hash(user.password_hash, password):
             session["user"] = user.username
+            session["username"] = user.username
             session["user_id"] = user.id
             flash("Succesvol ingelogd!", "success")
             return redirect(url_for("index"))
@@ -109,39 +111,112 @@ def register():
         return redirect(url_for("login"))
     return render_template("register.html")
 
+@app.route("/admin")
+def admin():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    current_user = User.query.get(session["user_id"])
+    if current_user.username != ADMIN_USERNAME:
+        flash("Je hebt geen toegang tot de beheerderspagina.", "danger")
+        return redirect(url_for("index"))
+
+    users = User.query.all()
+    return render_template("admin.html", users=users)
+
+
+@app.route("/admin/delete_user/<int:user_id>", methods=["POST"])
+def delete_user(user_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    current_user = User.query.get(session["user_id"])
+    if current_user.username != ADMIN_USERNAME:
+        flash("Geen toestemming", "danger")
+        return redirect(url_for("index"))
+
+    if user_id == current_user.id:
+        flash("Je kunt jezelf niet verwijderen.", "warning")
+        return redirect(url_for("admin"))
+
+    user = User.query.get_or_404(user_id)
+    Cigar.query.filter_by(user_id=user.id).delete()
+    db.session.delete(user)
+    db.session.commit()
+    flash("Gebruiker verwijderd.", "success")
+    return redirect(url_for("admin"))
+
+@app.route("/admin/reset_password/<int:user_id>", methods=["GET", "POST"])
+def admin_reset_password(user_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    current_user = User.query.get(session["user_id"])
+    if current_user.username != os.getenv("ADMIN_USERNAME"):
+        flash("Geen toegang tot deze pagina.", "danger")
+        return redirect(url_for("index"))
+
+    user = User.query.get_or_404(user_id)
+
+    if request.method == "POST":
+        new_password = request.form.get("new_password")
+        confirm_password = request.form.get("confirm_password")
+
+        if new_password != confirm_password:
+            flash("Wachtwoorden komen niet overeen.", "warning")
+            return redirect(url_for("admin_reset_password", user_id=user.id))
+
+        user.set_password(new_password)
+        db.session.commit()
+        flash(f"Wachtwoord voor gebruiker '{user.username}' is gewijzigd.", "success")
+        return redirect(url_for("admin"))
+
+    return render_template("admin_reset_password.html", user=user)
+
+@app.context_processor
+def inject_is_admin():
+    return {
+        "is_admin": session.get("username") == os.getenv("ADMIN_USERNAME")
+    }
+
 @app.route("/add", methods=["GET", "POST"])
 def add():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
     if request.method == "POST":
-        name = request.form["name"]
-        rating = int(request.form["rating"])
-        origin_country = request.form.get("origin_country")
-        purchase_location = request.form.get("purchase_location")
-        price = float(request.form.get("price") or 0)
+        try:
+            name = request.form.get("name")
+            rating = int(request.form.get("rating"))
+            origin_country = request.form.get("origin_country")
+            purchase_location = request.form.get("purchase_location")
+            price = float(request.form.get("price") or 0.0)
+            remarks = request.form.get("remarks") 
 
-        image_file = request.files.get("image")
-        image_filename = None
-        if image_file and image_file.filename:
-            filename = secure_filename(image_file.filename)
-            image_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-            image_file.save(image_path)
-            image_filename = filename
+            image_file = request.files.get("image")
+            image_filename = None
+            if image_file and image_file.filename != "":
+                filename = secure_filename(image_file.filename)
+                image_file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+                image_filename = filename
 
-        new_cigar = Cigar(
-            name=name,
-            rating=rating,
-            origin_country=origin_country,
-            purchase_location=purchase_location,
-            price=price,
-            image_filename=image_filename,
-            user_id=session["user_id"]
-        )
-        db.session.add(new_cigar)
-        db.session.commit()
-        flash("Sigaar toegevoegd!", "success")
-        return redirect(url_for("index"))
+            new_cigar = Cigar(
+                name=name,
+                rating=rating,
+                origin_country=origin_country,
+                purchase_location=purchase_location,
+                price=price,
+                remarks=remarks, 
+                image_filename=image_filename,
+                user_id=session["user_id"]
+            )
+            db.session.add(new_cigar)
+            db.session.commit()
+            flash("Sigaar toegevoegd!", "success")
+            return redirect(url_for("index"))
+        except Exception as e:
+            flash(f"Fout bij toevoegen: {e}", "danger")
+            return redirect(url_for("add"))
 
     return render_template("add.html")
 
@@ -158,6 +233,7 @@ def edit(id):
         cigar.origin_country = request.form.get("origin_country")
         cigar.purchase_location = request.form.get("purchase_location")
         cigar.price = float(request.form.get("price") or 0.0)
+        cigar.remarks = request.form.get("remarks")
 
         image_file = request.files.get("image")
         if image_file and image_file.filename:

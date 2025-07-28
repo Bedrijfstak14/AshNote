@@ -7,7 +7,6 @@
     <a href="{{ url_for('add') }}" class="btn btn-success">Nieuwe sigaar toevoegen</a>
 </div>
 
-<!-- Zoek- en sorteervelden -->
 <form method="GET" action="{{ url_for('index') }}" class="mb-3">
   <div class="row g-2">
     <div class="col-md-6">
@@ -39,6 +38,7 @@
                     <th class="d-none d-sm-table-cell">Land</th>
                     <th class="d-none d-sm-table-cell">Aankooplocatie</th>
                     <th class="d-none d-sm-table-cell">Prijs (€)</th>
+                    <th class="d-none d-sm-table-cell">Opmerkingen</th>
                     <th>Acties</th>
                 </tr>
             </thead>
@@ -57,6 +57,7 @@
                     <td class="d-none d-sm-table-cell">{{ cigar.origin_country or '-' }}</td>
                     <td class="d-none d-sm-table-cell">{{ cigar.purchase_location or '-' }}</td>
                     <td class="d-none d-sm-table-cell">{{ "%.2f"|format(cigar.price or 0) }}</td>
+                    <td class="d-none d-sm-table-cell">{{ cigar.remarks or '-' }}</td>
                     <td>
                         <div class="d-flex flex-column flex-sm-row gap-1">
                             <a href="{{ url_for('edit', id=cigar.id) }}" class="btn btn-sm btn-outline-primary">Bewerk</a>
