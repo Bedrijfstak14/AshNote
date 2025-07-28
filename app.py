@@ -176,7 +176,7 @@ def admin_reset_password(user_id):
 @app.context_processor
 def inject_is_admin():
     return {
-        "is_admin": session.get("username") == os.getenv("ADMIN_USERNAME")
+        "is_admin": session.get("username") == ADMIN_USERNAME
     }
 
 @app.route("/add", methods=["GET", "POST"])
