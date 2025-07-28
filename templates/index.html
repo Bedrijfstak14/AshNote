@@ -7,6 +7,26 @@
     <a href="{{ url_for('add') }}" class="btn btn-success">Nieuwe sigaar toevoegen</a>
 </div>
 
+<form method="GET" action="{{ url_for('index') }}" class="mb-3">
+  <div class="row g-2">
+    <div class="col-md-6">
+      <input type="text" name="search" class="form-control" placeholder="Zoek op naam..." value="{{ request.args.get('search', '') }}">
+    </div>
+    <div class="col-md-4">
+      <select name="sort" class="form-select">
+        <option value="">Sorteer op...</option>
+        <option value="name" {% if sort == 'name' %}selected{% endif %}>Naam</option>
+        <option value="price" {% if sort == 'price' %}selected{% endif %}>Prijs</option>
+        <option value="purchase_location" {% if sort == 'purchase_location' %}selected{% endif %}>Aankooplocatie</option>
+        <option value="origin_country" {% if sort == 'origin_country' %}selected{% endif %}>Land</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100">Toepassen</button>
+    </div>
+  </div>
+</form>
+
 {% if cigars %}
     <div class="table-responsive">
         <table class="table table-striped align-middle">
@@ -16,8 +36,9 @@
                     <th>Naam</th>
                     <th>Beoordeling</th>
                     <th class="d-none d-sm-table-cell">Land</th>
-                    <th class="d-none d-sm-table-cell">Locatie</th>
+                    <th class="d-none d-sm-table-cell">Aankooplocatie</th>
                     <th class="d-none d-sm-table-cell">Prijs (€)</th>
+                    <th class="d-none d-sm-table-cell">Opmerkingen</th>
                     <th>Acties</th>
                 </tr>
             </thead>
@@ -36,6 +57,7 @@
                     <td class="d-none d-sm-table-cell">{{ cigar.origin_country or '-' }}</td>
                     <td class="d-none d-sm-table-cell">{{ cigar.purchase_location or '-' }}</td>
                     <td class="d-none d-sm-table-cell">{{ "%.2f"|format(cigar.price or 0) }}</td>
+                    <td class="d-none d-sm-table-cell">{{ cigar.remarks or '-' }}</td>
                     <td>
                         <div class="d-flex flex-column flex-sm-row gap-1">
                             <a href="{{ url_for('edit', id=cigar.id) }}" class="btn btn-sm btn-outline-primary">Bewerk</a>
