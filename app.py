@@ -343,7 +343,7 @@ def api_search_cigar():
         response = requests.get(url, headers=headers, params=params)
         print("RESPONSETEXT =", response.text)  # optioneel weer verwijderen
         response.raise_for_status()
-        return jsonify(response.json().get("cigars", []))  # <-- FIX HIER
+        return jsonify(response.json().get("cigars", []))
     except requests.RequestException as e:
         print("API FOUT:", str(e))
         return jsonify({"error": str(e)}), 500
