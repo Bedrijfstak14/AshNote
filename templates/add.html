@@ -7,7 +7,10 @@
 <form method="POST" enctype="multipart/form-data">
     <div class="mb-3">
         <label for="name" class="form-label">Naam</label>
-        <input type="text" class="form-control" id="name" name="name" required>
+        <div class="input-group">
+            <input type="text" class="form-control" id="cigar-name" name="name" required>
+            <button type="button" class="btn btn-outline-secondary" id="search-cigar-btn">🔍 Zoek extern</button>
+        </div>
     </div>
     <div class="mb-3">
         <label for="rating" class="form-label">Beoordeling (1-10)</label>
@@ -35,5 +38,83 @@
     </div>
     <button type="submit" class="btn btn-success">Toevoegen</button>
 </form>
+
+<!-- Modal -->
+<div class="modal fade" id="cigarSearchModal" tabindex="-1" aria-labelledby="cigarSearchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cigarSearchModalLabel">Zoekresultaten</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Sluiten"></button>
+      </div>
+      <div class="modal-body" id="cigar-search-results">
+        <p>Even zoeken...</p>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById("search-cigar-btn").addEventListener("click", function () {
+    const name = document.getElementById("cigar-name").value;
+    if (!name.trim()) {
+        alert("Voer eerst een naam in.");
+        return;
+    }
+
+    // Toon eerst de modal met spinner
+    const modalBody = document.getElementById("cigar-search-results");
+    modalBody.innerHTML = `
+        <div class="d-flex justify-content-center align-items-center" style="height:150px;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Laden...</span>
+            </div>
+        </div>
+    `;
+    const modal = new bootstrap.Modal(document.getElementById("cigarSearchModal"));
+    modal.show();
+
+    // Haal resultaten op
+    fetch(`/api/search_cigar?name=${encodeURIComponent(name)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (!Array.isArray(data) || data.length === 0) {
+                modalBody.innerHTML = "<p>Geen resultaten gevonden.</p>";
+            } else {
+                modalBody.innerHTML = `
+                    <ul class="list-group">
+                        ${data.map(cigar => `
+                            <li class="list-group-item cigar-result"
+                                data-name="${cigar.name}"
+                                data-country="${cigar.country || ''}"
+                                style="cursor:pointer">
+                                <strong>${cigar.name}</strong><br>
+                                Land: ${cigar.country || 'Onbekend'}<br>
+                                Wrapper: ${cigar.wrapper || 'Onbekend'}<br>
+                                Sterkte: ${cigar.strength || 'Onbekend'}<br>
+                                Lengte: ${cigar.length} inch, Ring: ${cigar.ringGauge}
+                            </li>
+                        `).join("")}
+                    </ul>
+                `;
+
+                document.querySelectorAll(".cigar-result").forEach(item => {
+                    item.addEventListener("click", () => {
+                        const name = item.getAttribute("data-name");
+                        const country = item.getAttribute("data-country");
+                        document.getElementById("cigar-name").value = name;
+                        document.getElementById("origin_country").value = country;
+                        const modalInstance = bootstrap.Modal.getInstance(document.getElementById("cigarSearchModal"));
+                        modalInstance.hide();
+                    });
+                });
+            }
+        })
+        .catch(error => {
+            console.error("Fout bij ophalen:", error);
+            modalBody.innerHTML = "<p>Er ging iets mis bij het ophalen van gegevens.</p>";
+        });
+});
+</script>
+
 
 {% endblock %}

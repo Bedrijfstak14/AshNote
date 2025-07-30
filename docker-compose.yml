@@ -1,14 +1,11 @@
 version: '3.8'
 
 services:
-  cigarlog:
+  cigarlog-test:
     build: .
     ports:
-      - "5005:8000"
+      - "5006:8000"
     env_file:
       - .env      
     volumes:
-      - appdata:/app/data
-
-volumes:
-  appdata:
+      - ./data:/app/data
