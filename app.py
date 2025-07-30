@@ -345,7 +345,7 @@ def api_search_cigar():
         response.raise_for_status()
         return jsonify(response.json().get("cigars", []))
     except requests.RequestException as e:
-        print("API FOUT:", str(e))
+        logging.error("API FOUT: %s", str(e))
         return jsonify({"error": str(e)}), 500
 
 
