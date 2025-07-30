@@ -1,10 +1,12 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from sqlalchemy import or_
+import requests
+
 
 load_dotenv()
 
@@ -323,6 +325,28 @@ def change_password():
         return redirect(url_for("account"))
 
     return render_template("change_password.html")
+
+@app.route("/api/search_cigar")
+def api_search_cigar():
+    name = request.args.get("name", "").strip()
+    if not name:
+        return jsonify([])
+
+    url = "https://cigars.p.rapidapi.com/cigars"
+    headers = {
+        "x-rapidapi-key": os.getenv("RAPIDAPI_KEY"),
+        "x-rapidapi-host": os.getenv("RAPIDAPI_HOST", "cigars.p.rapidapi.com")
+    }
+    params = {"page": "1", "name": name}
+
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        print("RESPONSETEXT =", response.text)  # optioneel weer verwijderen
+        response.raise_for_status()
+        return jsonify(response.json().get("cigars", []))
+    except requests.RequestException as e:
+        logging.error("API FOUT: %s", str(e))
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/logout")
