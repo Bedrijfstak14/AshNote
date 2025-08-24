@@ -73,8 +73,13 @@ Ga naar: [http://localhost:5006](http://localhost:5006)
 
 ### Zoeken en sorteren
 * **Zoekfunctie**: Zoek op naam, aankooplocatie of land van herkomst
-* **Sorteeropties**: Sorteer op naam, prijs, aankooplocatie of land van herkomst
+* **Sorteeropties**: Sorteer op naam, beoordeling (hoog naar laag), prijs, aankooplocatie of land van herkomst
 * **Responsieve tabel**: Desktop en mobiele weergave geoptimaliseerd
+
+### Foto functionaliteiten
+* **Foto-upload**: Upload afbeeldingen van je sigaren
+* **Foto vergroting**: Klik op foto's om ze vergroot te bekijken in een modal
+* **Thumbnail preview**: Zie kleine voorbeelden in overzichten en tijdens bewerken
 
 ### Gebruikersfuncties
 * **Multi-user support**: Meerdere gebruikers kunnen elk hun eigen sigarencollectie beheren
@@ -83,7 +88,8 @@ Ga naar: [http://localhost:5006](http://localhost:5006)
 * **Persoonlijke collectie**: Elke gebruiker ziet alleen zijn eigen sigaren
 
 ### Admin-functies
-* **Gebruikersbeheer**: Bekijk alle gebruikers
+* **Gebruikersbeheer**: Bekijk alle gebruikers met hun sigarenaantallen
+* **Gebruikersstatistieken**: Zie hoeveel sigaren elke gebruiker heeft geregistreerd
 * **Gebruikers verwijderen**: Verwijder gebruikers (en al hun gegevens)
 * **Wachtwoord reset**: Reset wachtwoorden van andere gebruikers
 * **Volledige controle**: Admin heeft toegang tot alle beheerfuncties
@@ -137,6 +143,11 @@ docker-compose up --build -d
 
 ## 🔧 Technische details
 
+### Architectuur
+* **Modulaire opbouw**: Gerefactorde codebase met Flask Blueprints
+* **App Factory Pattern**: Flexibele applicatie configuratie
+* **Separation of Concerns**: Elke module heeft een duidelijke verantwoordelijkheid
+
 ### Backend
 * **Flask**: Python web framework
 * **SQLAlchemy**: Database ORM
@@ -147,7 +158,7 @@ docker-compose up --build -d
 ### Frontend
 * **Bootstrap 5**: Responsive UI framework
 * **Jinja2**: Template engine
-* **JavaScript**: Voor dynamische functionaliteit (API-zoeken)
+* **JavaScript**: Voor dynamische functionaliteit (API-zoeken, foto modals)
 
 ### Security
 * **Wachtwoord hashing**: Werkzeug password hashing
@@ -250,8 +261,13 @@ Go to: [http://localhost:5006](http://localhost:5006)
 
 ### Search and Sort
 * **Search function**: Search by name, purchase location or country of origin
-* **Sort options**: Sort by name, price, purchase location or country of origin
+* **Sort options**: Sort by name, rating (high to low), price, purchase location or country of origin
 * **Responsive table**: Desktop and mobile display optimized
+
+### Photo Features
+* **Photo upload**: Upload images of your cigars
+* **Photo enlargement**: Click on photos to view them enlarged in a modal
+* **Thumbnail preview**: See small previews in overviews and during editing
 
 ### User Functions
 * **Multi-user support**: Multiple users can each manage their own cigar collection
@@ -260,7 +276,8 @@ Go to: [http://localhost:5006](http://localhost:5006)
 * **Personal collection**: Each user only sees their own cigars
 
 ### Admin Functions
-* **User management**: View all users
+* **User management**: View all users with their cigar counts
+* **User statistics**: See how many cigars each user has registered
 * **Delete users**: Remove users (and all their data)
 * **Password reset**: Reset passwords of other users
 * **Full control**: Admin has access to all management functions
@@ -314,6 +331,11 @@ docker-compose up --build -d
 
 ## 🔧 Technical Details
 
+### Architecture
+* **Modular structure**: Refactored codebase with Flask Blueprints
+* **App Factory Pattern**: Flexible application configuration
+* **Separation of Concerns**: Each module has a clear responsibility
+
 ### Backend
 * **Flask**: Python web framework
 * **SQLAlchemy**: Database ORM
@@ -324,7 +346,7 @@ docker-compose up --build -d
 ### Frontend
 * **Bootstrap 5**: Responsive UI framework
 * **Jinja2**: Template engine
-* **JavaScript**: For dynamic functionality (API search)
+* **JavaScript**: For dynamic functionality (API search, photo modals)
 
 ### Security
 * **Password hashing**: Werkzeug password hashing
