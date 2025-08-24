@@ -16,7 +16,7 @@
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm mb-4">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('cigars.index') }}">
                 <img src="{{ url_for('static', filename='ashnote-logo.png') }}" alt="AshNote Logo" class="ashnote-logo me-2">
                 <strong>AshNote</strong>
             </a>
@@ -31,23 +31,23 @@
                     <ul class="navbar-nav align-items-lg-center flex-row gap-2">
                         {% if is_admin %}
                         <li class="nav-item">
-                            <a href="{{ url_for('admin') }}" class="btn btn-outline-dark btn-sm">Admin</a>
+                            <a href="{{ url_for('admin.admin_panel') }}" class="btn btn-outline-dark btn-sm">Admin</a>
                         </li>
                         {% endif %}
                         <li class="nav-item">
-                            <a href="{{ url_for('account') }}" class="btn btn-outline-primary btn-sm">Mijn account</a>
+                            <a href="{{ url_for('cigars.account') }}" class="btn btn-outline-primary btn-sm">Mijn account</a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">Uitloggen</a>
+                            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-secondary btn-sm">Uitloggen</a>
                         </li>
                     </ul>
                 {% else %}
                     <ul class="navbar-nav align-items-lg-center flex-row gap-2">
                         <li class="nav-item">
-                            <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-sm">Inloggen</a>
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm">Inloggen</a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">Registreren</a>
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Registreren</a>
                         </li>
                     </ul>
                 {% endif %}

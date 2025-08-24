@@ -31,9 +31,56 @@
     </div>
     <div class="mb-3">
         <label for="image" class="form-label">Afbeelding (optioneel)</label>
+        {% if cigar.image_filename %}
+        <div class="mb-2">
+            <p class="text-muted">Huidige afbeelding:</p>
+            <img src="{{ url_for('cigars.uploaded_file', filename=cigar.image_filename) }}" 
+                 alt="Huidige foto van {{ cigar.name }}" 
+                 class="img-fluid" 
+                 style="max-width: 150px; cursor: pointer;" 
+                 data-bs-toggle="modal" 
+                 data-bs-target="#imageModal"
+                 data-image-src="{{ url_for('cigars.uploaded_file', filename=cigar.image_filename) }}"
+                 data-image-title="{{ cigar.name }}">
+        </div>
+        {% endif %}
         <input type="file" class="form-control" id="image" name="image" accept="image/*">
     </div>
     <button type="submit" class="btn btn-primary">Opslaan</button>
 </form>
+
+<!-- Modal voor vergrote afbeelding -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">Foto van sigaar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Sluiten"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="modalImage" src="" alt="Vergrote foto" class="img-fluid" style="max-height: 70vh;">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// JavaScript om de modal te vullen met de juiste afbeelding
+document.addEventListener('DOMContentLoaded', function() {
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('imageModalLabel');
+    
+    imageModal.addEventListener('show.bs.modal', function (event) {
+        const trigger = event.relatedTarget;
+        const imageSrc = trigger.getAttribute('data-image-src');
+        const imageTitle = trigger.getAttribute('data-image-title');
+        
+        modalImage.src = imageSrc;
+        modalImage.alt = 'Vergrote foto van ' + imageTitle;
+        modalTitle.textContent = 'Foto van ' + imageTitle;
+    });
+});
+</script>
 
 {% endblock %}

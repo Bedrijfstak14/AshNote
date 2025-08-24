@@ -4,10 +4,10 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <h2 class="mb-0">Overzicht van sigaren</h2>
-    <a href="{{ url_for('add') }}" class="btn btn-success">Nieuwe sigaar toevoegen</a>
+    <a href="{{ url_for('cigars.add') }}" class="btn btn-success">Nieuwe sigaar toevoegen</a>
 </div>
 
-<form method="GET" action="{{ url_for('index') }}" class="mb-3">
+<form method="GET" action="{{ url_for('cigars.index') }}" class="mb-3">
   <div class="row g-2">
     <div class="col-md-6">
       <input type="text" name="search" class="form-control" placeholder="Zoek op naam..." value="{{ request.args.get('search', '') }}">
@@ -16,6 +16,7 @@
       <select name="sort" class="form-select">
         <option value="">Sorteer op...</option>
         <option value="name" {% if sort == 'name' %}selected{% endif %}>Naam</option>
+        <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Beoordeling (hoog naar laag)</option>
         <option value="price" {% if sort == 'price' %}selected{% endif %}>Prijs</option>
         <option value="purchase_location" {% if sort == 'purchase_location' %}selected{% endif %}>Aankooplocatie</option>
         <option value="origin_country" {% if sort == 'origin_country' %}selected{% endif %}>Land</option>
@@ -47,7 +48,14 @@
                 <tr>
                     <td>
                         {% if cigar.image_filename %}
-                        <img src="{{ url_for('uploaded_file', filename=cigar.image_filename) }}" alt="Foto" class="img-fluid" style="max-width: 60px;">
+                        <img src="{{ url_for('cigars.uploaded_file', filename=cigar.image_filename) }}" 
+                             alt="Foto van {{ cigar.name }}" 
+                             class="img-fluid cigar-thumbnail" 
+                             style="max-width: 60px; cursor: pointer;" 
+                             data-bs-toggle="modal" 
+                             data-bs-target="#imageModal"
+                             data-image-src="{{ url_for('cigars.uploaded_file', filename=cigar.image_filename) }}"
+                             data-image-title="{{ cigar.name }}">
                         {% else %}
                         <img src="{{ url_for('static', filename='ashnote-logo.png') }}" alt="Geen foto" class="img-fluid" style="max-width: 60px;">
                         {% endif %}
@@ -60,8 +68,8 @@
                     <td class="d-none d-sm-table-cell">{{ cigar.remarks or '-' }}</td>
                     <td>
                         <div class="d-flex flex-column flex-sm-row gap-1">
-                            <a href="{{ url_for('edit', id=cigar.id) }}" class="btn btn-sm btn-outline-primary">Bewerk</a>
-                            <form action="{{ url_for('delete', id=cigar.id) }}" method="post">
+                            <a href="{{ url_for('cigars.edit', id=cigar.id) }}" class="btn btn-sm btn-outline-primary">Bewerk</a>
+                            <form action="{{ url_for('cigars.delete', id=cigar.id) }}" method="post">
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Verwijder</button>
                             </form>
                         </div>
@@ -74,5 +82,39 @@
 {% else %}
     <p class="text-muted">Nog geen sigaren toegevoegd.</p>
 {% endif %}
+
+<!-- Modal voor vergrote afbeelding -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">Foto van sigaar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Sluiten"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="modalImage" src="" alt="Vergrote foto" class="img-fluid" style="max-height: 70vh;">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// JavaScript om de modal te vullen met de juiste afbeelding
+document.addEventListener('DOMContentLoaded', function() {
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('imageModalLabel');
+    
+    imageModal.addEventListener('show.bs.modal', function (event) {
+        const trigger = event.relatedTarget;
+        const imageSrc = trigger.getAttribute('data-image-src');
+        const imageTitle = trigger.getAttribute('data-image-title');
+        
+        modalImage.src = imageSrc;
+        modalImage.alt = 'Vergrote foto van ' + imageTitle;
+        modalTitle.textContent = 'Foto van ' + imageTitle;
+    });
+});
+</script>
 
 {% endblock %}

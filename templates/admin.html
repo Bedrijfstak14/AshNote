@@ -2,30 +2,46 @@
 {% block title %}Beheer gebruikers{% endblock %}
 {% block content %}
 
-<h2>Gebruikersbeheer</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Gebruikersbeheer</h2>
+    <div class="text-muted">
+        <small>
+            Totaal: {{ users_with_counts|length }} gebruiker{% if users_with_counts|length != 1 %}s{% endif %}
+        </small>
+    </div>
+</div>
 
 <table class="table table-striped align-middle mt-4">
     <thead>
         <tr>
             <th>ID</th>
             <th>Gebruikersnaam</th>
+            <th>Aantal sigaren</th>
             <th>Acties</th>
         </tr>
     </thead>
     <tbody>
-        {% for user in users %}
+        {% for user, cigar_count in users_with_counts %}
         <tr>
             <td>{{ user.id }}</td>
             <td>{{ user.username }}</td>
             <td>
+                <span class="badge bg-primary">{{ cigar_count }}</span>
+                {% if cigar_count == 1 %}
+                    sigaar
+                {% else %}
+                    sigaren
+                {% endif %}
+            </td>
+            <td>
                 <div class="d-flex flex-wrap gap-2">
-                    <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}">
+                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}">
                         <button type="submit" class="btn btn-sm btn-outline-danger"
                                 onclick="return confirm('Weet je zeker dat je deze gebruiker wilt verwijderen?')">
                             Verwijder
                         </button>
                     </form>
-                    <a href="{{ url_for('admin_reset_password', user_id=user.id) }}"
+                    <a href="{{ url_for('admin.admin_reset_password', user_id=user.id) }}"
                        class="btn btn-sm btn-outline-warning">
                         Wachtwoord wijzigen
                     </a>
