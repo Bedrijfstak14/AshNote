@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from sqlalchemy import func
 from app.models import db, User, Cigar
 from app.utils import admin_required
 
@@ -7,8 +8,16 @@ admin = Blueprint('admin', __name__, url_prefix='/admin')
 @admin.route("/")
 @admin_required
 def admin_panel():
-    users = User.query.all()
-    return render_template("admin.html", users=users)
+    # Query om gebruikers met hun sigarenaantallen op te halen
+    users_with_counts = db.session.query(
+        User,
+        func.count(Cigar.id).label('cigar_count')
+    ).outerjoin(Cigar, User.id == Cigar.user_id)\
+     .group_by(User.id)\
+     .order_by(User.username)\
+     .all()
+    
+    return render_template("admin.html", users_with_counts=users_with_counts)
 
 @admin.route("/delete_user/<int:user_id>", methods=["POST"])
 @admin_required
