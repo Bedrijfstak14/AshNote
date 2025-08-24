@@ -4,10 +4,10 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <h2 class="mb-0">Overzicht van sigaren</h2>
-    <a href="{{ url_for('add') }}" class="btn btn-success">Nieuwe sigaar toevoegen</a>
+    <a href="{{ url_for('cigars.add') }}" class="btn btn-success">Nieuwe sigaar toevoegen</a>
 </div>
 
-<form method="GET" action="{{ url_for('index') }}" class="mb-3">
+<form method="GET" action="{{ url_for('cigars.index') }}" class="mb-3">
   <div class="row g-2">
     <div class="col-md-6">
       <input type="text" name="search" class="form-control" placeholder="Zoek op naam..." value="{{ request.args.get('search', '') }}">
@@ -47,7 +47,7 @@
                 <tr>
                     <td>
                         {% if cigar.image_filename %}
-                        <img src="{{ url_for('uploaded_file', filename=cigar.image_filename) }}" alt="Foto" class="img-fluid" style="max-width: 60px;">
+                        <img src="{{ url_for('cigars.uploaded_file', filename=cigar.image_filename) }}" alt="Foto" class="img-fluid" style="max-width: 60px;">
                         {% else %}
                         <img src="{{ url_for('static', filename='ashnote-logo.png') }}" alt="Geen foto" class="img-fluid" style="max-width: 60px;">
                         {% endif %}
@@ -60,8 +60,8 @@
                     <td class="d-none d-sm-table-cell">{{ cigar.remarks or '-' }}</td>
                     <td>
                         <div class="d-flex flex-column flex-sm-row gap-1">
-                            <a href="{{ url_for('edit', id=cigar.id) }}" class="btn btn-sm btn-outline-primary">Bewerk</a>
-                            <form action="{{ url_for('delete', id=cigar.id) }}" method="post">
+                            <a href="{{ url_for('cigars.edit', id=cigar.id) }}" class="btn btn-sm btn-outline-primary">Bewerk</a>
+                            <form action="{{ url_for('cigars.delete', id=cigar.id) }}" method="post">
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Verwijder</button>
                             </form>
                         </div>

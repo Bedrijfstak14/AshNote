@@ -16,7 +16,7 @@
     <input type="password" id="password" name="password" class="form-control" required aria-label="Wachtwoord" aria-describedby="passwordHelp">
   </div>
   <button type="submit" class="btn btn-success">Account aanmaken</button>
-  <a href="{{ url_for('login') }}" class="btn btn-link">Al een account? Inloggen</a>
+  <a href="{{ url_for('auth.login') }}" class="btn btn-link">Al een account? Inloggen</a>
 </form>
 
 {% endblock %}
