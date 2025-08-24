@@ -26,7 +26,8 @@ def index():
         "name": Cigar.name,
         "price": Cigar.price,
         "purchase_location": Cigar.purchase_location,
-        "origin_country": Cigar.origin_country
+        "origin_country": Cigar.origin_country,
+        "rating": Cigar.rating.desc()  # Hoogste beoordeling eerst
     }
     if sort_column in sort_options:
         cigars_query = cigars_query.order_by(sort_options[sort_column])
