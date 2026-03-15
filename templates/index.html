@@ -58,6 +58,7 @@
                     <th>Naam</th>
                     <th>Beoordeling</th>
                     <th class="d-none d-sm-table-cell">Status</th>
+                    <th class="d-none d-md-table-cell">Type</th>
                     <th class="d-none d-sm-table-cell">Land</th>
                     <th class="d-none d-sm-table-cell">Aankooplocatie</th>
                     <th class="d-none d-sm-table-cell">Prijs (€)</th>
@@ -91,6 +92,7 @@
                         {% elif cigar.status == 'gifted' %}<span class="badge bg-info text-dark">Weggegeven</span>
                         {% else %}<span class="badge bg-light text-dark">{{ cigar.status }}</span>{% endif %}
                     </td>
+                    <td class="d-none d-md-table-cell">{{ cigar.cigar_type or '-' }}</td>
                     <td class="d-none d-sm-table-cell">{{ cigar.origin_country or '-' }}</td>
                     <td class="d-none d-sm-table-cell">{{ cigar.purchase_location or '-' }}</td>
                     <td class="d-none d-sm-table-cell">{{ "%.2f"|format(cigar.price or 0) }}</td>
@@ -104,11 +106,8 @@
                                 <button type="submit" class="btn btn-sm btn-warning" title="Aansteken">Aansteken</button>
                             </form>
                             {% elif cigar.status == 'smoking' %}
-                            <form action="{{ url_for('cigars.update_status', id=cigar.id) }}" method="post">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <input type="hidden" name="new_status" value="smoked">
-                                <button type="submit" class="btn btn-sm btn-secondary" title="Sigaar is op">Op!</button>
-                            </form>
+                            <a href="{{ url_for('cigars.log_smoke', id=cigar.id) }}"
+                               class="btn btn-sm btn-secondary" title="Sigaar op, rook-sessie loggen">Op!</a>
                             {% endif %}
                             <a href="{{ url_for('cigars.edit', id=cigar.id) }}" class="btn btn-sm btn-outline-primary">Bewerk</a>
                             <form action="{{ url_for('cigars.delete', id=cigar.id) }}" method="post">

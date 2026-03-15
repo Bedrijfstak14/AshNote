@@ -1,12 +1,13 @@
 import csv
 import io
 import logging
+from datetime import date
 from flask import (
     Blueprint, render_template, request, redirect, url_for,
     flash, session, send_from_directory, current_app, Response,
 )
 from sqlalchemy import or_, func
-from app.models import db, User, Cigar, CIGAR_STATUSES
+from app.models import db, User, Cigar, SmokeEvent, CIGAR_STATUSES
 from app.utils import login_required, handle_file_upload, delete_file
 from app.config import Config
 
@@ -49,13 +50,14 @@ def _validate_cigar_form(form):
 
     origin_country = (form.get("origin_country") or "").strip()[:100]
     purchase_location = (form.get("purchase_location") or "").strip()[:100]
+    cigar_type = (form.get("cigar_type") or "").strip()[:100]
     remarks = (form.get("remarks") or "").strip()
 
     status = form.get("status", "in_stock")
     if status not in CIGAR_STATUSES:
         status = "in_stock"
 
-    return (name, rating, origin_country, purchase_location, price, remarks, status), None
+    return (name, rating, origin_country, purchase_location, cigar_type, price, remarks, status), None
 
 
 @cigars.route("/")
@@ -111,14 +113,36 @@ def index():
     )
 
 
-def _get_purchase_locations():
+def _get_distinct(column):
     rows = (
-        db.session.query(Cigar.purchase_location)
+        db.session.query(column)
         .filter(Cigar.user_id == session["user_id"],
-                Cigar.purchase_location.isnot(None),
-                Cigar.purchase_location != "")
+                column.isnot(None),
+                column != "")
         .distinct()
-        .order_by(Cigar.purchase_location)
+        .order_by(column)
+        .all()
+    )
+    return [r[0] for r in rows]
+
+
+def _get_purchase_locations():
+    return _get_distinct(Cigar.purchase_location)
+
+
+def _get_cigar_types():
+    return _get_distinct(Cigar.cigar_type)
+
+
+def _get_smoke_locations():
+    rows = (
+        db.session.query(SmokeEvent.location)
+        .join(Cigar)
+        .filter(Cigar.user_id == session["user_id"],
+                SmokeEvent.location.isnot(None),
+                SmokeEvent.location != "")
+        .distinct()
+        .order_by(SmokeEvent.location)
         .all()
     )
     return [r[0] for r in rows]
@@ -138,7 +162,7 @@ def add():
             flash(error, "warning")
             return redirect(url_for("cigars.add"))
 
-        name, rating, origin_country, purchase_location, price, remarks, status = fields
+        name, rating, origin_country, purchase_location, cigar_type, price, remarks, status = fields
 
         try:
             image_file = request.files.get("image")
@@ -152,6 +176,7 @@ def add():
             new_cigar = Cigar(
                 name=name,
                 rating=rating,
+                cigar_type=cigar_type or None,
                 origin_country=origin_country,
                 purchase_location=purchase_location,
                 price=price,
@@ -170,7 +195,9 @@ def add():
             flash("Er is een onverwachte fout opgetreden. Probeer het opnieuw.", "danger")
             return redirect(url_for("cigars.add"))
 
-    return render_template("add.html", purchase_locations=_get_purchase_locations())
+    return render_template("add.html",
+                           purchase_locations=_get_purchase_locations(),
+                           cigar_types=_get_cigar_types())
 
 
 @cigars.route("/edit/<int:id>", methods=["GET", "POST"])
@@ -184,10 +211,11 @@ def edit(id):
             flash(error, "warning")
             return redirect(url_for("cigars.edit", id=id))
 
-        name, rating, origin_country, purchase_location, price, remarks, status = fields
+        name, rating, origin_country, purchase_location, cigar_type, price, remarks, status = fields
 
         cigar.name = name
         cigar.rating = rating
+        cigar.cigar_type = cigar_type or None
         cigar.origin_country = origin_country
         cigar.purchase_location = purchase_location
         cigar.price = price
@@ -211,7 +239,9 @@ def edit(id):
         flash("Sigaar bijgewerkt!", "success")
         return redirect(url_for("cigars.index"))
 
-    return render_template("edit.html", cigar=cigar, purchase_locations=_get_purchase_locations())
+    return render_template("edit.html", cigar=cigar,
+                           purchase_locations=_get_purchase_locations(),
+                           cigar_types=_get_cigar_types())
 
 
 @cigars.route("/delete/<int:id>", methods=["POST"])
@@ -243,12 +273,50 @@ def update_status(id):
     db.session.commit()
     logger.info("Sigaar id=%s status → %s door user_id=%s.", id, new_status, session["user_id"])
 
-    # Bij "gerookt" zonder beoordeling: doorsturen naar bewerk-formulier
     if new_status == "smoked" and cigar.rating is None:
         flash("Sigaar op! Vul nog een beoordeling in.", "info")
         return redirect(url_for("cigars.edit", id=id))
 
     return redirect(url_for("cigars.index"))
+
+
+@cigars.route("/smoke/<int:id>", methods=["GET", "POST"])
+@login_required
+def log_smoke(id):
+    cigar = Cigar.query.filter_by(id=id, user_id=session["user_id"]).first_or_404()
+
+    if request.method == "POST":
+        raw_date = request.form.get("smoked_at", "").strip()
+        try:
+            smoked_at = date.fromisoformat(raw_date) if raw_date else date.today()
+        except ValueError:
+            smoked_at = date.today()
+
+        location = (request.form.get("location") or "").strip()[:100] or None
+        notes = (request.form.get("notes") or "").strip() or None
+
+        event = SmokeEvent(
+            cigar_id=cigar.id,
+            user_id=session["user_id"],
+            smoked_at=smoked_at,
+            location=location,
+            notes=notes,
+        )
+        db.session.add(event)
+        cigar.status = "smoked"
+        db.session.commit()
+        logger.info("Rook-event gelogd voor sigaar id=%s door user_id=%s.", id, session["user_id"])
+
+        if cigar.rating is None:
+            flash("Sigaar op! Vul nog een beoordeling in.", "info")
+            return redirect(url_for("cigars.edit", id=id))
+
+        flash("Rook-sessie gelogd.", "success")
+        return redirect(url_for("cigars.index"))
+
+    return render_template("smoke_log.html", cigar=cigar,
+                           today=date.today().isoformat(),
+                           smoke_locations=_get_smoke_locations())
 
 
 @cigars.route("/account")
@@ -308,6 +376,32 @@ def account():
         .all()
     )
 
+    # Geconsumeerde vs voorraadwaarde
+    smoked_value = (
+        db.session.query(func.sum(Cigar.price))
+        .filter(Cigar.user_id == uid, Cigar.status == "smoked")
+        .scalar() or 0
+    )
+    stock_value = (
+        db.session.query(func.sum(Cigar.price))
+        .filter(Cigar.user_id == uid, Cigar.status.in_(["in_stock", "smoking"]))
+        .scalar() or 0
+    )
+
+    # Tijdlijn: rook-events per maand (laatste 12 maanden)
+    smoke_timeline = (
+        db.session.query(
+            func.strftime("%Y-%m", SmokeEvent.smoked_at).label("month"),
+            func.count(SmokeEvent.id).label("cnt"),
+            func.sum(Cigar.price).label("value"),
+        )
+        .join(Cigar, SmokeEvent.cigar_id == Cigar.id)
+        .filter(SmokeEvent.user_id == uid)
+        .group_by(func.strftime("%Y-%m", SmokeEvent.smoked_at))
+        .order_by(func.strftime("%Y-%m", SmokeEvent.smoked_at))
+        .all()
+    )
+
     return render_template(
         "account.html",
         user=user,
@@ -318,6 +412,9 @@ def account():
         status_counts=status_counts,
         rating_distribution=rating_distribution,
         country_rows=country_rows,
+        smoked_value=smoked_value,
+        stock_value=stock_value,
+        smoke_timeline=smoke_timeline,
         cigar_statuses=CIGAR_STATUSES,
     )
 

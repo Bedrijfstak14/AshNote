@@ -1,10 +1,10 @@
-from datetime import datetime, timezone
+from datetime import datetime, date, timezone
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 def _utcnow():
     return datetime.now(timezone.utc)
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
@@ -32,6 +32,7 @@ class Cigar(db.Model):
     rating = db.Column(db.Integer, nullable=True)
     origin_country = db.Column(db.String(100))
     purchase_location = db.Column(db.String(100))
+    cigar_type = db.Column(db.String(100))
     price = db.Column(db.Float)
     image_filename = db.Column(db.String(255))
     remarks = db.Column(db.Text)
@@ -39,3 +40,14 @@ class Cigar(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=_utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=_utcnow, onupdate=_utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    smoke_events = db.relationship("SmokeEvent", backref="cigar", lazy=True,
+                                   cascade="all, delete-orphan", order_by="SmokeEvent.smoked_at.desc()")
+
+
+class SmokeEvent(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cigar_id = db.Column(db.Integer, db.ForeignKey("cigar.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    smoked_at = db.Column(db.Date, nullable=False, default=date.today)
+    location = db.Column(db.String(100))
+    notes = db.Column(db.Text)

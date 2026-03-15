@@ -17,6 +17,18 @@
                min="1" max="10" value="{{ cigar.rating or '' }}" placeholder="Nog niet beoordeeld">
     </div>
     <div class="mb-3">
+        <label for="cigar_type" class="form-label">Type / Vitola <small class="text-muted">– optioneel</small></label>
+        <input type="text" class="form-control" id="cigar_type" name="cigar_type"
+               value="{{ cigar.cigar_type or '' }}" maxlength="100"
+               list="type-suggestions" placeholder="bijv. Robusto, Corona, Torpedo..."
+               autocomplete="off">
+        <datalist id="type-suggestions">
+            {% for t in cigar_types %}
+            <option value="{{ t }}">
+            {% endfor %}
+        </datalist>
+    </div>
+    <div class="mb-3">
         <label for="origin_country" class="form-label">Land van herkomst</label>
         <input type="text" class="form-control" id="origin_country" name="origin_country"
                value="{{ cigar.origin_country }}" maxlength="100">

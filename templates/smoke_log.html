@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Sigaar op – {{ cigar.name }}{% endblock %}
+{% block content %}
+
+<div class="mb-4">
+    <h2>Sigaar op!</h2>
+    <p class="text-muted">{{ cigar.name }}{% if cigar.cigar_type %} &mdash; {{ cigar.cigar_type }}{% endif %}</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">Rook-sessie loggen</div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label for="smoked_at" class="form-label">Datum gerookt</label>
+                        <input type="date" class="form-control" id="smoked_at" name="smoked_at"
+                               value="{{ today }}" max="{{ today }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Locatie <small class="text-muted">– optioneel</small></label>
+                        <input type="text" class="form-control" id="location" name="location"
+                               maxlength="100" list="smoke-location-suggestions"
+                               placeholder="bijv. Thuis, Terras, Sigaarwinkel..." autocomplete="off">
+                        <datalist id="smoke-location-suggestions">
+                            {% for loc in smoke_locations %}
+                            <option value="{{ loc }}">
+                            {% endfor %}
+                        </datalist>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notities <small class="text-muted">– optioneel</small></label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2"
+                                  placeholder="Hoe was de sessie?"></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">Opslaan</button>
+                        <a href="{{ url_for('cigars.index') }}" class="btn btn-outline-secondary">Annuleren</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if cigar.smoke_events %}
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">Eerder gerookt</div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for event in cigar.smoke_events %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ event.smoked_at.strftime("%d %b %Y") }}</strong>
+                            {% if event.location %}<span class="text-muted small">{{ event.location }}</span>{% endif %}
+                        </div>
+                        {% if event.notes %}<div class="text-muted small mt-1">{{ event.notes }}</div>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -16,8 +16,8 @@
     <div class="col-6 col-md-3">
         <div class="card text-center shadow-sm h-100">
             <div class="card-body">
-                <div class="display-6 fw-bold text-success">€{{ "%.2f"|format(total_value) }}</div>
-                <div class="text-muted small">Totale waarde</div>
+                <div class="display-6 fw-bold text-success">€{{ "%.2f"|format(stock_value) }}</div>
+                <div class="text-muted small">Voorraadwaarde</div>
             </div>
         </div>
     </div>
@@ -34,6 +34,41 @@
             <div class="card-body">
                 <div class="display-6 fw-bold text-info">{{ status_counts.get('in_stock', 0) }}</div>
                 <div class="text-muted small">In voorraad</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="h4 fw-bold text-danger">€{{ "%.2f"|format(smoked_value) }}</div>
+                <div class="text-muted small">Geconsumeerde waarde</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="h4 fw-bold text-secondary">{{ status_counts.get('smoked', 0) }}</div>
+                <div class="text-muted small">Gerookt</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="h4 fw-bold text-warning">{{ status_counts.get('smoking', 0) }}</div>
+                <div class="text-muted small">Aan het roken</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="h4 fw-bold text-primary">€{{ "%.2f"|format(total_value) }}</div>
+                <div class="text-muted small">Totale waarde ooit</div>
             </div>
         </div>
     </div>
@@ -58,6 +93,19 @@
         </div>
     </div>
 </div>
+
+{% if smoke_timeline %}
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">Rook-tijdlijn (per maand)</div>
+            <div class="card-body">
+                <canvas id="timelineChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% if country_rows %}
 <div class="row g-3 mb-4">
@@ -146,11 +194,52 @@
             labels: sLabels,
             datasets: [{
                 data: sValues,
-                backgroundColor: ['#198754', '#6c757d', '#0dcaf0'],
+                backgroundColor: ['#198754', '#ffc107', '#6c757d', '#0dcaf0'],
             }]
         },
         options: { plugins: { legend: { position: 'bottom' } } }
     });
+
+    {% if smoke_timeline %}
+    // Rook-tijdlijn
+    const tlMonths = {{ smoke_timeline | map(attribute=0) | list | tojson }};
+    const tlCounts = {{ smoke_timeline | map(attribute=1) | list | tojson }};
+    const tlValues = {{ smoke_timeline | map(attribute=2) | list | tojson }};
+    new Chart(document.getElementById('timelineChart'), {
+        type: 'bar',
+        data: {
+            labels: tlMonths,
+            datasets: [
+                {
+                    label: 'Aantal gerookt',
+                    data: tlCounts,
+                    backgroundColor: 'rgba(108, 117, 125, 0.7)',
+                    borderColor: 'rgba(108, 117, 125, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Waarde (€)',
+                    data: tlValues,
+                    type: 'line',
+                    borderColor: 'rgba(220, 53, 69, 0.9)',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    yAxisID: 'y2',
+                }
+            ]
+        },
+        options: {
+            plugins: { legend: { position: 'bottom' } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 }, title: { display: true, text: 'Aantal' } },
+                y2: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false },
+                      title: { display: true, text: '€' } }
+            }
+        }
+    });
+    {% endif %}
 
     {% if country_rows %}
     // Top landen
