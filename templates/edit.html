@@ -5,46 +5,52 @@
 <h2>Sigaar bewerken</h2>
 
 <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="mb-3">
         <label for="name" class="form-label">Naam</label>
-        <input type="text" class="form-control" id="name" name="name" value="{{ cigar.name }}" required>
+        <input type="text" class="form-control" id="name" name="name"
+               value="{{ cigar.name }}" maxlength="100" required>
     </div>
     <div class="mb-3">
-        <label for="rating" class="form-label">Beoordeling (1-10)</label>
-        <input type="number" class="form-control" id="rating" name="rating" min="1" max="10" value="{{ cigar.rating }}" required>
+        <label for="rating" class="form-label">Beoordeling (1–10)</label>
+        <input type="number" class="form-control" id="rating" name="rating"
+               min="1" max="10" value="{{ cigar.rating }}" required>
     </div>
     <div class="mb-3">
         <label for="origin_country" class="form-label">Land van herkomst</label>
-        <input type="text" class="form-control" id="origin_country" name="origin_country" value="{{ cigar.origin_country }}">
+        <input type="text" class="form-control" id="origin_country" name="origin_country"
+               value="{{ cigar.origin_country }}" maxlength="100">
     </div>
     <div class="mb-3">
         <label for="purchase_location" class="form-label">Aankooplocatie</label>
-        <input type="text" class="form-control" id="purchase_location" name="purchase_location" value="{{ cigar.purchase_location }}">
+        <input type="text" class="form-control" id="purchase_location" name="purchase_location"
+               value="{{ cigar.purchase_location }}" maxlength="100">
     </div>
     <div class="mb-3">
         <label for="price" class="form-label">Prijs (€)</label>
-        <input type="number" class="form-control" id="price" name="price" step="0.01" value="{{ cigar.price }}">
+        <input type="number" class="form-control" id="price" name="price"
+               step="0.01" min="0" max="100000" value="{{ cigar.price }}">
     </div>
     <div class="mb-3">
         <label for="remarks" class="form-label">Opmerkingen</label>
         <textarea class="form-control" id="remarks" name="remarks" rows="3">{{ cigar.remarks }}</textarea>
     </div>
     <div class="mb-3">
-        <label for="image" class="form-label">Afbeelding (optioneel)</label>
+        <label for="image" class="form-label">Afbeelding <small class="text-muted">(max 5 MB, jpg/png/gif/webp)</small></label>
         {% if cigar.image_filename %}
         <div class="mb-2">
             <p class="text-muted">Huidige afbeelding:</p>
-            <img src="{{ url_for('cigars.uploaded_file', filename=cigar.image_filename) }}" 
-                 alt="Huidige foto van {{ cigar.name }}" 
-                 class="img-fluid" 
-                 style="max-width: 150px; cursor: pointer;" 
-                 data-bs-toggle="modal" 
+            <img src="{{ url_for('cigars.uploaded_file', filename=cigar.image_filename) }}"
+                 alt="Huidige foto van {{ cigar.name }}"
+                 class="img-fluid"
+                 style="max-width: 150px; cursor: pointer;"
+                 data-bs-toggle="modal"
                  data-bs-target="#imageModal"
                  data-image-src="{{ url_for('cigars.uploaded_file', filename=cigar.image_filename) }}"
                  data-image-title="{{ cigar.name }}">
         </div>
         {% endif %}
-        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+        <input type="file" class="form-control" id="image" name="image" accept=".jpg,.jpeg,.png,.gif,.webp">
     </div>
     <button type="submit" class="btn btn-primary">Opslaan</button>
 </form>
@@ -65,20 +71,17 @@
 </div>
 
 <script>
-// JavaScript om de modal te vullen met de juiste afbeelding
 document.addEventListener('DOMContentLoaded', function() {
     const imageModal = document.getElementById('imageModal');
+    if (!imageModal) return;
     const modalImage = document.getElementById('modalImage');
     const modalTitle = document.getElementById('imageModalLabel');
-    
+
     imageModal.addEventListener('show.bs.modal', function (event) {
         const trigger = event.relatedTarget;
-        const imageSrc = trigger.getAttribute('data-image-src');
-        const imageTitle = trigger.getAttribute('data-image-title');
-        
-        modalImage.src = imageSrc;
-        modalImage.alt = 'Vergrote foto van ' + imageTitle;
-        modalTitle.textContent = 'Foto van ' + imageTitle;
+        modalImage.src = trigger.getAttribute('data-image-src');
+        modalImage.alt = 'Vergrote foto van ' + trigger.getAttribute('data-image-title');
+        modalTitle.textContent = 'Foto van ' + trigger.getAttribute('data-image-title');
     });
 });
 </script>

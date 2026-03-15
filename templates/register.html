@@ -6,14 +6,22 @@
     <h2 class="mb-0">Registreren</h2>
 </div>
 
-<form method="post" class="card p-4 shadow-sm" novalidate>
+<form method="post" class="card p-4 shadow-sm">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="mb-3">
     <label for="username" class="form-label">Gebruikersnaam</label>
-    <input type="text" id="username" name="username" class="form-control" required aria-label="Gebruikersnaam" aria-describedby="usernameHelp">
+    <input type="text" id="username" name="username" class="form-control"
+           required minlength="3" maxlength="50"
+           pattern="[a-zA-Z0-9_]+" autocomplete="username"
+           aria-describedby="usernameHelp">
+    <div id="usernameHelp" class="form-text">3–50 tekens, alleen letters, cijfers en underscore.</div>
   </div>
   <div class="mb-3">
     <label for="password" class="form-label">Wachtwoord</label>
-    <input type="password" id="password" name="password" class="form-control" required aria-label="Wachtwoord" aria-describedby="passwordHelp">
+    <input type="password" id="password" name="password" class="form-control"
+           required minlength="8" autocomplete="new-password"
+           aria-describedby="passwordHelp">
+    <div id="passwordHelp" class="form-text">Minimaal 8 tekens.</div>
   </div>
   <button type="submit" class="btn btn-success">Account aanmaken</button>
   <a href="{{ url_for('auth.login') }}" class="btn btn-link">Al een account? Inloggen</a>

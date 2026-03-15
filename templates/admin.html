@@ -27,15 +27,12 @@
             <td>{{ user.username }}</td>
             <td>
                 <span class="badge bg-primary">{{ cigar_count }}</span>
-                {% if cigar_count == 1 %}
-                    sigaar
-                {% else %}
-                    sigaren
-                {% endif %}
+                {% if cigar_count == 1 %}sigaar{% else %}sigaren{% endif %}
             </td>
             <td>
                 <div class="d-flex flex-wrap gap-2">
                     <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-sm btn-outline-danger"
                                 onclick="return confirm('Weet je zeker dat je deze gebruiker wilt verwijderen?')">
                             Verwijder

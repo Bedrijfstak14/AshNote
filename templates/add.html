@@ -5,36 +5,37 @@
 <h2>Nieuwe sigaar toevoegen</h2>
 
 <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="mb-3">
-        <label for="name" class="form-label">Naam</label>
+        <label for="cigar-name" class="form-label">Naam</label>
         <div class="input-group">
-            <input type="text" class="form-control" id="cigar-name" name="name" required>
+            <input type="text" class="form-control" id="cigar-name" name="name" maxlength="100" required>
             <button type="button" class="btn btn-outline-secondary" id="search-cigar-btn">🔍 Zoek extern</button>
         </div>
     </div>
     <div class="mb-3">
-        <label for="rating" class="form-label">Beoordeling (1-10)</label>
+        <label for="rating" class="form-label">Beoordeling (1–10)</label>
         <input type="number" class="form-control" id="rating" name="rating" min="1" max="10" required>
     </div>
     <div class="mb-3">
         <label for="origin_country" class="form-label">Land van herkomst</label>
-        <input type="text" class="form-control" id="origin_country" name="origin_country">
+        <input type="text" class="form-control" id="origin_country" name="origin_country" maxlength="100">
     </div>
     <div class="mb-3">
         <label for="purchase_location" class="form-label">Aankooplocatie</label>
-        <input type="text" class="form-control" id="purchase_location" name="purchase_location">
+        <input type="text" class="form-control" id="purchase_location" name="purchase_location" maxlength="100">
     </div>
     <div class="mb-3">
         <label for="price" class="form-label">Prijs (€)</label>
-        <input type="number" class="form-control" id="price" name="price" step="0.01">
+        <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" max="100000">
     </div>
     <div class="mb-3">
         <label for="remarks" class="form-label">Opmerkingen</label>
         <textarea class="form-control" id="remarks" name="remarks" rows="3"></textarea>
     </div>
     <div class="mb-3">
-        <label for="image" class="form-label">Afbeelding</label>
-        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+        <label for="image" class="form-label">Afbeelding <small class="text-muted">(max 5 MB, jpg/png/gif/webp)</small></label>
+        <input type="file" class="form-control" id="image" name="image" accept=".jpg,.jpeg,.png,.gif,.webp">
     </div>
     <button type="submit" class="btn btn-success">Toevoegen</button>
 </form>
@@ -61,7 +62,6 @@ document.getElementById("search-cigar-btn").addEventListener("click", function (
         return;
     }
 
-    // Toon eerst de modal met spinner
     const modalBody = document.getElementById("cigar-search-results");
     modalBody.innerHTML = `
         <div class="d-flex justify-content-center align-items-center" style="height:150px;">
@@ -73,7 +73,6 @@ document.getElementById("search-cigar-btn").addEventListener("click", function (
     const modal = new bootstrap.Modal(document.getElementById("cigarSearchModal"));
     modal.show();
 
-    // Haal resultaten op
     fetch(`/api/search_cigar?name=${encodeURIComponent(name)}`)
         .then(response => response.json())
         .then(data => {
@@ -96,25 +95,19 @@ document.getElementById("search-cigar-btn").addEventListener("click", function (
                         `).join("")}
                     </ul>
                 `;
-
                 document.querySelectorAll(".cigar-result").forEach(item => {
                     item.addEventListener("click", () => {
-                        const name = item.getAttribute("data-name");
-                        const country = item.getAttribute("data-country");
-                        document.getElementById("cigar-name").value = name;
-                        document.getElementById("origin_country").value = country;
-                        const modalInstance = bootstrap.Modal.getInstance(document.getElementById("cigarSearchModal"));
-                        modalInstance.hide();
+                        document.getElementById("cigar-name").value = item.getAttribute("data-name");
+                        document.getElementById("origin_country").value = item.getAttribute("data-country");
+                        bootstrap.Modal.getInstance(document.getElementById("cigarSearchModal")).hide();
                     });
                 });
             }
         })
-        .catch(error => {
-            console.error("Fout bij ophalen:", error);
+        .catch(() => {
             modalBody.innerHTML = "<p>Er ging iets mis bij het ophalen van gegevens.</p>";
         });
 });
 </script>
-
 
 {% endblock %}

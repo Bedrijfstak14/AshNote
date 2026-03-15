@@ -10,13 +10,14 @@
 <form method="GET" action="{{ url_for('cigars.index') }}" class="mb-3">
   <div class="row g-2">
     <div class="col-md-6">
-      <input type="text" name="search" class="form-control" placeholder="Zoek op naam..." value="{{ request.args.get('search', '') }}">
+      <input type="text" name="search" class="form-control" placeholder="Zoek op naam, land of locatie..."
+             value="{{ request.args.get('search', '') }}">
     </div>
     <div class="col-md-4">
       <select name="sort" class="form-select">
         <option value="">Sorteer op...</option>
         <option value="name" {% if sort == 'name' %}selected{% endif %}>Naam</option>
-        <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Beoordeling (hoog naar laag)</option>
+        <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Beoordeling (hoog → laag)</option>
         <option value="price" {% if sort == 'price' %}selected{% endif %}>Prijs</option>
         <option value="purchase_location" {% if sort == 'purchase_location' %}selected{% endif %}>Aankooplocatie</option>
         <option value="origin_country" {% if sort == 'origin_country' %}selected{% endif %}>Land</option>
@@ -48,11 +49,11 @@
                 <tr>
                     <td>
                         {% if cigar.image_filename %}
-                        <img src="{{ url_for('cigars.uploaded_file', filename=cigar.image_filename) }}" 
-                             alt="Foto van {{ cigar.name }}" 
-                             class="img-fluid cigar-thumbnail" 
-                             style="max-width: 60px; cursor: pointer;" 
-                             data-bs-toggle="modal" 
+                        <img src="{{ url_for('cigars.uploaded_file', filename=cigar.image_filename) }}"
+                             alt="Foto van {{ cigar.name }}"
+                             class="img-fluid cigar-thumbnail"
+                             style="max-width: 60px; cursor: pointer;"
+                             data-bs-toggle="modal"
                              data-bs-target="#imageModal"
                              data-image-src="{{ url_for('cigars.uploaded_file', filename=cigar.image_filename) }}"
                              data-image-title="{{ cigar.name }}">
@@ -70,7 +71,9 @@
                         <div class="d-flex flex-column flex-sm-row gap-1">
                             <a href="{{ url_for('cigars.edit', id=cigar.id) }}" class="btn btn-sm btn-outline-primary">Bewerk</a>
                             <form action="{{ url_for('cigars.delete', id=cigar.id) }}" method="post">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Verwijder</button>
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Sigaar verwijderen?')">Verwijder</button>
                             </form>
                         </div>
                     </td>
@@ -79,8 +82,39 @@
             </tbody>
         </table>
     </div>
+
+    {# Paginering #}
+    {% if pagination.pages > 1 %}
+    <nav aria-label="Paginering" class="mt-3">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('cigars.index', page=pagination.prev_num, search=request.args.get('search',''), sort=sort) }}">
+                    &laquo; Vorige
+                </a>
+            </li>
+            {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if p %}
+                    <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('cigars.index', page=p, search=request.args.get('search',''), sort=sort) }}">{{ p }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('cigars.index', page=pagination.next_num, search=request.args.get('search',''), sort=sort) }}">
+                    Volgende &raquo;
+                </a>
+            </li>
+        </ul>
+        <p class="text-center text-muted small">
+            Pagina {{ pagination.page }} van {{ pagination.pages }} ({{ pagination.total }} sigaren)
+        </p>
+    </nav>
+    {% endif %}
+
 {% else %}
-    <p class="text-muted">Nog geen sigaren toegevoegd.</p>
+    <p class="text-muted">Geen sigaren gevonden.</p>
 {% endif %}
 
 <!-- Modal voor vergrote afbeelding -->
@@ -99,20 +133,17 @@
 </div>
 
 <script>
-// JavaScript om de modal te vullen met de juiste afbeelding
 document.addEventListener('DOMContentLoaded', function() {
     const imageModal = document.getElementById('imageModal');
+    if (!imageModal) return;
     const modalImage = document.getElementById('modalImage');
     const modalTitle = document.getElementById('imageModalLabel');
-    
+
     imageModal.addEventListener('show.bs.modal', function (event) {
         const trigger = event.relatedTarget;
-        const imageSrc = trigger.getAttribute('data-image-src');
-        const imageTitle = trigger.getAttribute('data-image-title');
-        
-        modalImage.src = imageSrc;
-        modalImage.alt = 'Vergrote foto van ' + imageTitle;
-        modalTitle.textContent = 'Foto van ' + imageTitle;
+        modalImage.src = trigger.getAttribute('data-image-src');
+        modalImage.alt = 'Vergrote foto van ' + trigger.getAttribute('data-image-title');
+        modalTitle.textContent = 'Foto van ' + trigger.getAttribute('data-image-title');
     });
 });
 </script>
