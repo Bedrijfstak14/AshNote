@@ -29,12 +29,16 @@ def _validate_cigar_form(form):
     if len(name) > 100:
         return None, "Naam mag maximaal 100 tekens zijn."
 
-    try:
-        rating = int(form.get("rating", 0))
-        if not (1 <= rating <= 10):
-            raise ValueError
-    except (ValueError, TypeError):
-        return None, "Beoordeling moet een geheel getal tussen 1 en 10 zijn."
+    rating_raw = form.get("rating", "").strip()
+    if rating_raw == "":
+        rating = None
+    else:
+        try:
+            rating = int(rating_raw)
+            if not (1 <= rating <= 10):
+                raise ValueError
+        except (ValueError, TypeError):
+            return None, "Beoordeling moet een geheel getal tussen 1 en 10 zijn."
 
     try:
         price = float(form.get("price") or 0)
@@ -209,6 +213,28 @@ def delete(id):
     db.session.commit()
     logger.info("Sigaar id=%s verwijderd door user_id=%s.", id, session["user_id"])
     flash("Sigaar verwijderd.", "success")
+    return redirect(url_for("cigars.index"))
+
+
+@cigars.route("/status/<int:id>", methods=["POST"])
+@login_required
+def update_status(id):
+    cigar = Cigar.query.filter_by(id=id, user_id=session["user_id"]).first_or_404()
+    new_status = request.form.get("new_status", "")
+
+    if new_status not in CIGAR_STATUSES:
+        flash("Ongeldige status.", "warning")
+        return redirect(url_for("cigars.index"))
+
+    cigar.status = new_status
+    db.session.commit()
+    logger.info("Sigaar id=%s status → %s door user_id=%s.", id, new_status, session["user_id"])
+
+    # Bij "gerookt" zonder beoordeling: doorsturen naar bewerk-formulier
+    if new_status == "smoked" and cigar.rating is None:
+        flash("Sigaar op! Vul nog een beoordeling in.", "info")
+        return redirect(url_for("cigars.edit", id=id))
+
     return redirect(url_for("cigars.index"))
 
 

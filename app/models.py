@@ -10,6 +10,7 @@ db = SQLAlchemy()
 
 CIGAR_STATUSES = {
     "in_stock": "In voorraad",
+    "smoking": "Aan het roken",
     "smoked": "Gerookt",
     "gifted": "Weggegeven",
 }
@@ -28,7 +29,7 @@ class User(db.Model):
 class Cigar(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    rating = db.Column(db.Integer, nullable=False)
+    rating = db.Column(db.Integer, nullable=True)
     origin_country = db.Column(db.String(100))
     purchase_location = db.Column(db.String(100))
     price = db.Column(db.Float)

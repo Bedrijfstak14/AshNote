@@ -83,9 +83,10 @@
                         {% endif %}
                     </td>
                     <td>{{ cigar.name }}</td>
-                    <td>{{ cigar.rating }}</td>
+                    <td>{{ cigar.rating if cigar.rating is not none else '–' }}</td>
                     <td class="d-none d-sm-table-cell">
                         {% if cigar.status == 'in_stock' %}<span class="badge bg-success">In voorraad</span>
+                        {% elif cigar.status == 'smoking' %}<span class="badge bg-warning text-dark">Aan het roken</span>
                         {% elif cigar.status == 'smoked' %}<span class="badge bg-secondary">Gerookt</span>
                         {% elif cigar.status == 'gifted' %}<span class="badge bg-info text-dark">Weggegeven</span>
                         {% else %}<span class="badge bg-light text-dark">{{ cigar.status }}</span>{% endif %}
@@ -95,7 +96,20 @@
                     <td class="d-none d-sm-table-cell">{{ "%.2f"|format(cigar.price or 0) }}</td>
                     <td class="d-none d-sm-table-cell">{{ cigar.remarks or '-' }}</td>
                     <td>
-                        <div class="d-flex flex-column flex-sm-row gap-1">
+                        <div class="d-flex flex-column flex-sm-row gap-1 flex-wrap">
+                            {% if cigar.status == 'in_stock' %}
+                            <form action="{{ url_for('cigars.update_status', id=cigar.id) }}" method="post">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="new_status" value="smoking">
+                                <button type="submit" class="btn btn-sm btn-warning" title="Aansteken">Aansteken</button>
+                            </form>
+                            {% elif cigar.status == 'smoking' %}
+                            <form action="{{ url_for('cigars.update_status', id=cigar.id) }}" method="post">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="new_status" value="smoked">
+                                <button type="submit" class="btn btn-sm btn-secondary" title="Sigaar is op">Op!</button>
+                            </form>
+                            {% endif %}
                             <a href="{{ url_for('cigars.edit', id=cigar.id) }}" class="btn btn-sm btn-outline-primary">Bewerk</a>
                             <form action="{{ url_for('cigars.delete', id=cigar.id) }}" method="post">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
