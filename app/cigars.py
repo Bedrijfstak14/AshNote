@@ -111,6 +111,19 @@ def index():
     )
 
 
+def _get_purchase_locations():
+    rows = (
+        db.session.query(Cigar.purchase_location)
+        .filter(Cigar.user_id == session["user_id"],
+                Cigar.purchase_location.isnot(None),
+                Cigar.purchase_location != "")
+        .distinct()
+        .order_by(Cigar.purchase_location)
+        .all()
+    )
+    return [r[0] for r in rows]
+
+
 @cigars.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
@@ -157,7 +170,7 @@ def add():
             flash("Er is een onverwachte fout opgetreden. Probeer het opnieuw.", "danger")
             return redirect(url_for("cigars.add"))
 
-    return render_template("add.html")
+    return render_template("add.html", purchase_locations=_get_purchase_locations())
 
 
 @cigars.route("/edit/<int:id>", methods=["GET", "POST"])
@@ -198,7 +211,7 @@ def edit(id):
         flash("Sigaar bijgewerkt!", "success")
         return redirect(url_for("cigars.index"))
 
-    return render_template("edit.html", cigar=cigar)
+    return render_template("edit.html", cigar=cigar, purchase_locations=_get_purchase_locations())
 
 
 @cigars.route("/delete/<int:id>", methods=["POST"])

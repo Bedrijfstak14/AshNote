@@ -23,7 +23,13 @@
     </div>
     <div class="mb-3">
         <label for="purchase_location" class="form-label">Aankooplocatie</label>
-        <input type="text" class="form-control" id="purchase_location" name="purchase_location" maxlength="100">
+        <input type="text" class="form-control" id="purchase_location" name="purchase_location"
+               maxlength="100" list="location-suggestions" autocomplete="off">
+        <datalist id="location-suggestions">
+            {% for loc in purchase_locations %}
+            <option value="{{ loc }}">
+            {% endfor %}
+        </datalist>
     </div>
     <div class="mb-3">
         <label for="price" class="form-label">Prijs (€)</label>
