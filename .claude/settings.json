@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(pip install:*)",
+      "Bash(flask db:*)",
+      "Bash(python -m venv .venv)",
+      "Bash(.venv/bin/pip install:*)",
+      "Bash(python3 -m venv .venv)",
+      "Bash(FLASK_APP=app.py .venv/bin/flask db init)",
+      "Bash(FLASK_APP=app.py .venv/bin/flask db migrate -m \"initial: add status, created_at, updated_at to cigar\")",
+      "Bash(DATABASE_URL=\"sqlite:////AshNote/data/cigars.db\" FLASK_APP=app.py .venv/bin/flask db migrate -m \"initial: add status, created_at, updated_at to cigar\")",
+      "Bash(DATABASE_URL=\"sqlite:////AshNote/data/cigars.db\" FLASK_APP=app.py .venv/bin/flask db upgrade)",
+      "Bash(.venv/bin/pytest tests/ -v)",
+      "Bash(.venv/bin/python -m pytest tests/ -v)",
+      "Bash(DATABASE_URL=\"sqlite:////AshNote/data/cigars.db\" .venv/bin/python -c \":*)",
+      "Bash(DATABASE_URL=\"sqlite:////AshNote/data/cigars.db\" FLASK_APP=app.py .venv/bin/flask db migrate -m \"rating nullable, smoking status\")",
+      "Bash(.venv/bin/python -m pytest tests/ -q)",
+      "Bash(DATABASE_URL=\"sqlite:////AshNote/data/cigars.db\" FLASK_APP=app.py .venv/bin/flask db migrate -m \"cigar_type veld en smoke_event tabel\")"
+    ]
+  }
+}
