@@ -101,6 +101,11 @@ def index():
 
     pagination = cigars_query.paginate(page=page, per_page=PER_PAGE, error_out=False)
 
+    # Suggesties voor snelle aansteek-invoer: bestaande namen + types gecombineerd
+    name_suggestions = _get_distinct(Cigar.name)
+    type_suggestions = _get_cigar_types()
+    quick_suggestions = sorted(set(name_suggestions + type_suggestions))
+
     return render_template(
         "index.html",
         cigars=pagination.items,
@@ -109,6 +114,7 @@ def index():
         filter_status=filter_status,
         min_rating=min_rating,
         cigar_statuses=CIGAR_STATUSES,
+        quick_suggestions=quick_suggestions,
         is_admin=(session.get("username") == Config.ADMIN_USERNAME),
     )
 
@@ -151,6 +157,26 @@ def _get_smoke_locations():
 @cigars.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
+
+
+@cigars.route("/quick-smoke", methods=["POST"])
+@login_required
+def quick_smoke():
+    name = request.form.get("name", "").strip()
+    if not name or len(name) > 100:
+        flash("Vul een naam of type in.", "warning")
+        return redirect(url_for("cigars.index"))
+
+    cigar = Cigar(
+        name=name,
+        status="smoking",
+        user_id=session["user_id"],
+    )
+    db.session.add(cigar)
+    db.session.commit()
+    logger.info("Snel aangestoken: '%s' door user_id=%s.", name, session["user_id"])
+    flash(f"'{name}' staat nu als 'Aan het roken'.", "success")
+    return redirect(url_for("cigars.index"))
 
 
 @cigars.route("/add", methods=["GET", "POST"])

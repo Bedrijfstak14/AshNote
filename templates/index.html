@@ -10,6 +10,21 @@
     </div>
 </div>
 
+<form method="POST" action="{{ url_for('cigars.quick_smoke') }}" class="mb-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="input-group">
+        <span class="input-group-text">Nu aan het roken</span>
+        <input type="text" class="form-control" name="name" maxlength="100"
+               placeholder="Naam of type sigaar..." list="quick-suggestions" autocomplete="off" required>
+        <datalist id="quick-suggestions">
+            {% for s in quick_suggestions %}
+            <option value="{{ s }}">
+            {% endfor %}
+        </datalist>
+        <button type="submit" class="btn btn-warning">Aansteken</button>
+    </div>
+</form>
+
 <form method="GET" action="{{ url_for('cigars.index') }}" class="mb-3">
   <div class="row g-2">
     <div class="col-md-4">
