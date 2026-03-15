@@ -2,20 +2,181 @@
 {% block title %}Mijn account{% endblock %}
 {% block content %}
 
-<h2>Mijn account</h2>
+<h2 class="mb-4">Mijn account</h2>
 
-<div class="card p-4 shadow-sm">
-    <p><strong>Gebruikersnaam:</strong> {{ user.username }}</p>
-
-    <p><strong>Aantal sigaren:</strong> {{ cigar_count }}</p>
-
-    <p><strong>Totale waarde:</strong> €{{ "%.2f"|format(total_value) }}</p>
-
-    <p><strong>Meest voorkomende aankooplocatie:</strong>
-        {{ most_common_location if most_common_location else "Geen data" }}
-    </p>
-
-    <a href="{{ url_for('auth.change_password') }}" class="btn btn-outline-warning mt-3">Wachtwoord wijzigen</a>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="display-6 fw-bold text-primary">{{ cigar_count }}</div>
+                <div class="text-muted small">Sigaren totaal</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="display-6 fw-bold text-success">€{{ "%.2f"|format(total_value) }}</div>
+                <div class="text-muted small">Totale waarde</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="display-6 fw-bold text-warning">{{ avg_rating if avg_rating else '–' }}</div>
+                <div class="text-muted small">Gemiddelde beoordeling</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="display-6 fw-bold text-info">{{ status_counts.get('in_stock', 0) }}</div>
+                <div class="text-muted small">In voorraad</div>
+            </div>
+        </div>
+    </div>
 </div>
+
+{% if cigar_count > 0 %}
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Beoordelingsverdeling</div>
+            <div class="card-body">
+                <canvas id="ratingChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Status verdeling</div>
+            <div class="card-body d-flex justify-content-center">
+                <canvas id="statusChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if country_rows %}
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Top landen van herkomst</div>
+            <div class="card-body">
+                <canvas id="countryChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">Details</div>
+            <div class="card-body">
+                <p><strong>Gebruikersnaam:</strong> {{ user.username }}</p>
+                <p><strong>Meest voorkomende aankooplocatie:</strong>
+                    {{ most_common_location if most_common_location else "Geen data" }}
+                </p>
+                <a href="{{ url_for('cigars.export_csv') }}" class="btn btn-outline-secondary btn-sm mt-2">
+                    CSV exporteren
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <p><strong>Gebruikersnaam:</strong> {{ user.username }}</p>
+        <p><strong>Meest voorkomende aankooplocatie:</strong>
+            {{ most_common_location if most_common_location else "Geen data" }}
+        </p>
+        <a href="{{ url_for('cigars.export_csv') }}" class="btn btn-outline-secondary btn-sm mt-2">
+            CSV exporteren
+        </a>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <p><strong>Gebruikersnaam:</strong> {{ user.username }}</p>
+        <p class="text-muted">Voeg sigaren toe om statistieken te zien.</p>
+    </div>
+</div>
+{% endif %}
+
+<a href="{{ url_for('auth.change_password') }}" class="btn btn-outline-warning">Wachtwoord wijzigen</a>
+
+{% if cigar_count > 0 %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    // Beoordelingsverdeling
+    const ratingData = {{ rating_distribution | tojson }};
+    const ratingLabels = Array.from({length: 10}, (_, i) => String(i + 1));
+    const ratingValues = ratingLabels.map(l => ratingData[l] || 0);
+    new Chart(document.getElementById('ratingChart'), {
+        type: 'bar',
+        data: {
+            labels: ratingLabels,
+            datasets: [{
+                label: 'Aantal sigaren',
+                data: ratingValues,
+                backgroundColor: 'rgba(255, 193, 7, 0.7)',
+                borderColor: 'rgba(255, 193, 7, 1)',
+                borderWidth: 1,
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+
+    // Status verdeling
+    const statusCounts = {{ status_counts | tojson }};
+    const statusLabels = {{ cigar_statuses | tojson }};
+    const sLabels = Object.keys(statusCounts).map(k => statusLabels[k] || k);
+    const sValues = Object.values(statusCounts);
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: sLabels,
+            datasets: [{
+                data: sValues,
+                backgroundColor: ['#198754', '#6c757d', '#0dcaf0'],
+            }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
+    });
+
+    {% if country_rows %}
+    // Top landen
+    const countryLabels = {{ country_rows | map(attribute=0) | list | tojson }};
+    const countryValues = {{ country_rows | map(attribute=1) | list | tojson }};
+    new Chart(document.getElementById('countryChart'), {
+        type: 'bar',
+        data: {
+            labels: countryLabels,
+            datasets: [{
+                label: 'Aantal sigaren',
+                data: countryValues,
+                backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                borderColor: 'rgba(13, 110, 253, 1)',
+                borderWidth: 1,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+    {% endif %}
+})();
+</script>
+{% endif %}
 
 {% endblock %}

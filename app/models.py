@@ -1,7 +1,18 @@
+from datetime import datetime, timezone
+
+
+def _utcnow():
+    return datetime.now(timezone.utc)
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
+
+CIGAR_STATUSES = {
+    "in_stock": "In voorraad",
+    "smoked": "Gerookt",
+    "gifted": "Weggegeven",
+}
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -22,5 +33,8 @@ class Cigar(db.Model):
     purchase_location = db.Column(db.String(100))
     price = db.Column(db.Float)
     image_filename = db.Column(db.String(255))
-    remarks = db.Column(db.Text) 
+    remarks = db.Column(db.Text)
+    status = db.Column(db.String(20), nullable=False, default="in_stock")
+    created_at = db.Column(db.DateTime, nullable=False, default=_utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=_utcnow, onupdate=_utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)

@@ -1,6 +1,7 @@
 import os
 import logging
 from flask import Flask
+from flask_migrate import Migrate
 from app.config import Config
 from app.models import db
 from app.utils import is_admin
@@ -29,6 +30,7 @@ def create_app(test_config=None):
 
     # Extensions
     db.init_app(app)
+    Migrate(app, db)
     csrf.init_app(app)
     limiter.init_app(app)
 
@@ -55,8 +57,5 @@ def create_app(test_config=None):
     @app.context_processor
     def inject_is_admin():
         return {"is_admin": is_admin()}
-
-    with app.app_context():
-        db.create_all()
 
     return app

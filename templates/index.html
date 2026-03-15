@@ -4,16 +4,19 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <h2 class="mb-0">Overzicht van sigaren</h2>
-    <a href="{{ url_for('cigars.add') }}" class="btn btn-success">Nieuwe sigaar toevoegen</a>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('cigars.export_csv') }}" class="btn btn-outline-secondary btn-sm">CSV exporteren</a>
+        <a href="{{ url_for('cigars.add') }}" class="btn btn-success">Nieuwe sigaar toevoegen</a>
+    </div>
 </div>
 
 <form method="GET" action="{{ url_for('cigars.index') }}" class="mb-3">
   <div class="row g-2">
-    <div class="col-md-6">
+    <div class="col-md-4">
       <input type="text" name="search" class="form-control" placeholder="Zoek op naam, land of locatie..."
              value="{{ request.args.get('search', '') }}">
     </div>
-    <div class="col-md-4">
+    <div class="col-md-2">
       <select name="sort" class="form-select">
         <option value="">Sorteer op...</option>
         <option value="name" {% if sort == 'name' %}selected{% endif %}>Naam</option>
@@ -21,6 +24,23 @@
         <option value="price" {% if sort == 'price' %}selected{% endif %}>Prijs</option>
         <option value="purchase_location" {% if sort == 'purchase_location' %}selected{% endif %}>Aankooplocatie</option>
         <option value="origin_country" {% if sort == 'origin_country' %}selected{% endif %}>Land</option>
+        <option value="created_at" {% if sort == 'created_at' %}selected{% endif %}>Nieuwste eerst</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="status" class="form-select">
+        <option value="">Alle statussen</option>
+        {% for key, label in cigar_statuses.items() %}
+        <option value="{{ key }}" {% if filter_status == key %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="min_rating" class="form-select">
+        <option value="">Min. beoordeling</option>
+        {% for r in range(1, 11) %}
+        <option value="{{ r }}" {% if min_rating == r|string %}selected{% endif %}>{{ r }}+</option>
+        {% endfor %}
       </select>
     </div>
     <div class="col-md-2">
@@ -37,6 +57,7 @@
                     <th>Foto</th>
                     <th>Naam</th>
                     <th>Beoordeling</th>
+                    <th class="d-none d-sm-table-cell">Status</th>
                     <th class="d-none d-sm-table-cell">Land</th>
                     <th class="d-none d-sm-table-cell">Aankooplocatie</th>
                     <th class="d-none d-sm-table-cell">Prijs (€)</th>
@@ -63,6 +84,12 @@
                     </td>
                     <td>{{ cigar.name }}</td>
                     <td>{{ cigar.rating }}</td>
+                    <td class="d-none d-sm-table-cell">
+                        {% if cigar.status == 'in_stock' %}<span class="badge bg-success">In voorraad</span>
+                        {% elif cigar.status == 'smoked' %}<span class="badge bg-secondary">Gerookt</span>
+                        {% elif cigar.status == 'gifted' %}<span class="badge bg-info text-dark">Weggegeven</span>
+                        {% else %}<span class="badge bg-light text-dark">{{ cigar.status }}</span>{% endif %}
+                    </td>
                     <td class="d-none d-sm-table-cell">{{ cigar.origin_country or '-' }}</td>
                     <td class="d-none d-sm-table-cell">{{ cigar.purchase_location or '-' }}</td>
                     <td class="d-none d-sm-table-cell">{{ "%.2f"|format(cigar.price or 0) }}</td>
@@ -88,21 +115,21 @@
     <nav aria-label="Paginering" class="mt-3">
         <ul class="pagination justify-content-center">
             <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-                <a class="page-link" href="{{ url_for('cigars.index', page=pagination.prev_num, search=request.args.get('search',''), sort=sort) }}">
+                <a class="page-link" href="{{ url_for('cigars.index', page=pagination.prev_num, search=request.args.get('search',''), sort=sort, status=filter_status, min_rating=min_rating) }}">
                     &laquo; Vorige
                 </a>
             </li>
             {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
                 {% if p %}
                     <li class="page-item {% if p == pagination.page %}active{% endif %}">
-                        <a class="page-link" href="{{ url_for('cigars.index', page=p, search=request.args.get('search',''), sort=sort) }}">{{ p }}</a>
+                        <a class="page-link" href="{{ url_for('cigars.index', page=p, search=request.args.get('search',''), sort=sort, status=filter_status, min_rating=min_rating) }}">{{ p }}</a>
                     </li>
                 {% else %}
                     <li class="page-item disabled"><span class="page-link">…</span></li>
                 {% endif %}
             {% endfor %}
             <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-                <a class="page-link" href="{{ url_for('cigars.index', page=pagination.next_num, search=request.args.get('search',''), sort=sort) }}">
+                <a class="page-link" href="{{ url_for('cigars.index', page=pagination.next_num, search=request.args.get('search',''), sort=sort, status=filter_status, min_rating=min_rating) }}">
                     Volgende &raquo;
                 </a>
             </li>
